@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.customdomain/mcp",
+  "description": "Connect a customer's own domain to your SaaS over MCP: search and register domains, connect vanity/white-label domains, and automate DNS, ownership verification, and TLS/HTTPS across 63 providers. The domain MCP that provisions, not just checks availability.",
+  "version": "0.4.0",
+  "websiteUrl": "https://customdomain.ai",
+  "repository": {
+    "url": "https://github.com/ever-just/customdomain-mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.customdomain.ai/mcp"
+    }
+  ]
+}
