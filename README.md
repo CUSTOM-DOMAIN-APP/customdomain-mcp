@@ -1,6 +1,6 @@
 # Custom Domains MCP Server
 
-A hosted Model Context Protocol (MCP) server for domains, maintained by [CustomDomain.ai](https://customdomain.ai). It gives AI agents in Claude, Cursor, ChatGPT and any other MCP client eleven tools to search domain availability, register domains, connect a customer's existing domain, configure email DNS, set up forwarding, and track verification and TLS status. DNS configuration, domain ownership verification and certificate issuance are handled by the CustomDomain.ai control plane, so agents call tools that express intent and never touch raw DNS records.
+A hosted Model Context Protocol (MCP) server for domains, maintained by [CustomDomain.ai](https://customdomain.ai). It gives AI agents in Claude, Cursor, ChatGPT and any other MCP client twelve tools to search domain availability, register domains, connect a customer's existing domain, configure email DNS, set up forwarding, inventory the whole portfolio, and track verification and TLS status. DNS configuration, domain ownership verification and certificate issuance are handled by the CustomDomain.ai control plane, so agents call tools that express intent and never touch raw DNS records.
 
 **Endpoint:** `https://mcp.customdomain.ai/mcp` (streamable HTTP, JSON-RPC 2.0)
 
@@ -82,6 +82,7 @@ ChatGPT supports remote MCP servers as connectors in developer mode. Enable deve
 | `disconnect-domain` | Cleanly disconnect a managed connection |
 | `forward-domain` | Set up a permanent redirect from a domain to a destination |
 | `add-email` | Configure a domain for a mail provider in one step via server-side templates |
+| `list-connections` | Inventory every connection on the account, optionally filtered by status, so an agent can reconcile a whole portfolio rather than only the job it started (read only) |
 
 None of the tools accepts DNS records as input. Record values are computed by the control plane from vetted templates, which closes off prompt injection paths that end in arbitrary DNS writes. `create-domain-order` is fail closed: a paid order is placed only after the integrator's purchase authorization callback approves it.
 
