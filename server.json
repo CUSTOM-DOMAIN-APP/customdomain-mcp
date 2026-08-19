@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "ai.customdomain/mcp",
-  "description": "Connect a customer's own domain to your SaaS over MCP: search and register domains, connect vanity/white-label domains, and automate DNS, ownership verification, and TLS/HTTPS across 63 providers. The domain MCP that provisions, not just checks availability.",
+  "description": "Connect a customer's own domain to your SaaS over MCP: search and register domains, connect vanity/white-label domains, and automate DNS and TLS/HTTPS across 25 of the 63 DNS providers we catalogue, with guided step-by-step records for the remaining 38.",
   "version": "0.4.0",
   "websiteUrl": "https://customdomain.ai",
   "repository": {
