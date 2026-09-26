@@ -1,6 +1,6 @@
 # Tool reference
 
-Every tool the CustomDomain MCP server advertises, with its arguments and the
+Every tool the CustomDomain™ MCP server advertises, with its arguments and the
 shape of what comes back. The server is at `https://mcp.customdomain.ai/mcp`
 (streamable HTTP, JSON-RPC 2.0). See the [README](README.md) for client setup and
 authentication.
@@ -161,15 +161,17 @@ Returns `{ jobId, domain, status, connected, managed, records?, link?, message? 
 
 `status` is `pending`, `propagating`, `live` or `failed`. Poll until `connected`
 is `true`. The background poller runs about once a minute, so poll every 30 to 60
-seconds; faster gains nothing. A `failed` connection carries `error_code` and
-`error_message`: `propagation_timeout` when records never resolved, or
-`setup_incomplete` when they were never added at all. Both clear automatically if
-the connection later re-verifies, so `failed` does not mean start over.
+seconds; faster gains nothing.
 
-The give-up windows differ: 24 hours in `propagating` on an automatic rail, 72
-hours from `pending` on the manual path, because a human has to get to their DNS
-provider. Full lifecycle at
-[Connections](https://docs.customdomain.ai/docs/concepts/connections).
+A `failed` connection carries `error_code` and `error_message`: usually
+`propagation_timeout`, when records a rail wrote never resolved within 24 hours in
+`propagating`, or the reason a rail rejected the write. `failed` is not terminal:
+it clears if the connection later re-verifies, so it does not mean start over.
+
+A manual connection never fails on its own. If the records have not appeared after
+72 hours, it stays `pending` with `error_code: setup_incomplete` and is re-checked
+every six hours, because a human has to get to their DNS provider. Full lifecycle
+at [Connections](https://docs.customdomain.ai/docs/concepts/connections).
 
 ## discover-provider
 
