@@ -2,7 +2,7 @@
 
 The MCP server for custom domains: let Claude and other AI agents search, buy, connect and verify domains.
 
-**Status:** Production · server 0.4.0 · release [v0.4.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.4.0)
+**Status:** Production · server 0.5.0 · release [v0.5.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.5.0)
 
 [![live](https://img.shields.io/badge/live-mcp.customdomain.ai-1c1917?style=flat)](https://customdomain.ai/mcp-server)
 [![MCP registry](https://img.shields.io/badge/MCP%20registry-ai.customdomain%2Fmcp-1c1917?style=flat)](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp)
@@ -14,11 +14,11 @@ The MCP server for custom domains: let Claude and other AI agents search, buy, c
 
 |  |  |
 |---|---|
-| **What it is** | A hosted MCP server that gives an AI agent twelve domain tools |
+| **What it is** | A hosted MCP server that gives an AI agent seventeen domain tools |
 | **Who it's for** | Agent builders, SaaS platforms and coding-agent users who need a customer on their own domain |
 | **Live at** | [customdomain.ai/mcp-server](https://customdomain.ai/mcp-server) · endpoint `https://mcp.customdomain.ai/mcp` |
 | **Stack** | Go 1.25 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
-| **Status** | Production · 0.4.0 in the official MCP registry · 12 tools · 63 DNS providers catalogued, 25 automatic |
+| **Status** | Production · 0.5.0 in the official MCP registry · 17 tools · 63 DNS providers catalogued, 25 automatic |
 
 CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
 AI agent put a person on their own domain: find one, buy it, connect one they already own, set up its email
@@ -28,7 +28,7 @@ endpoint above.
 
 ```mermaid
 flowchart LR
-  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>12 tools"]
+  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>17 tools"]
   M -->|"Bearer forwarded"| C["Control plane<br/>api.customdomain.ai"]
   C --> R["Registrars<br/>search · buy"]
   C --> D["DNS providers<br/>63 catalogued · 25 automatic"]
@@ -67,7 +67,7 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
 
 ## What it does
 
-Twelve tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow you
+Seventeen tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow you
 have to assemble:
 
 - **Check whether a domain can be registered**, with live purchase and renewal pricing: `search-domain-availability`
@@ -82,12 +82,17 @@ have to assemble:
 - **Repair a domain that drifted** out of `live`, using a stored grant: `reapply-connection`
 - **Take a domain down cleanly**, reverting its DNS first: `disconnect-domain`
 - **Inventory the whole account** so an agent can reconcile a portfolio, not just the job it started: `list-connections`
+- **See what public DNS shows**, record by record, and what the user still has to do: `diagnose-connection`
+- **Run the DNS check now** once the user has fixed a record: `recheck-connection`
+- **Read a certificate**: issuer, expiry, days left, and whether renewal is failing: `check-certificate-status`
+- **Check whether new connections are allowed** (billing standing, plan, usage) before a batch: `check-billing-status`
+- **List the account's domain purchases**, newest first: `list-domain-orders`
 
 Full arguments and response shapes: **[TOOLS.md](./TOOLS.md)**.
 
 The receipts, all verifiable from outside: the server is published in the official MCP registry as
 [`ai.customdomain/mcp`](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp) at
-0.4.0, speaks protocol revision `2025-06-18`, and answers an unauthenticated call with a
+0.5.0, speaks protocol revision `2025-06-18`, and answers an unauthenticated call with a
 [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) challenge that names its own metadata document
 rather than a bare 401. Automatic setup covers **25 of the 63 DNS providers catalogued** (17 by scoped API
 token, 6 by provider OAuth, 2 by provider-hosted one-click), and the other 38 still work, returning records
@@ -257,7 +262,7 @@ split is why the tool surface can stay this narrow: all the state and all the ju
 ├── README.md      # this file: what the server is, how to point a client at it, how it is built
 ├── TOOLS.md       # the tool contract: every argument, every response field, every status value
 ├── CHANGELOG.md   # one entry per server version, matching the tags and GitHub releases
-├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.4.0, remote endpoint
+├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.5.0, remote endpoint
 ├── glama.json     # Glama directory ownership claim
 └── LICENSE        # MIT
 ```
@@ -269,7 +274,7 @@ plane it calls. Named here so the boundaries are legible, not linked, because th
 
 | Module | Purpose | Talks to |
 |---|---|---|
-| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the twelve tools in a fixed order | `tools.go`, `usage.go` |
+| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the seventeen tools in a fixed order | `tools.go`, `usage.go` |
 | `tools.go` | Tool definitions, JSON schemas, annotations and handlers | `client.go` |
 | `jsonrpc.go` | JSON-RPC 2.0 framing and error codes | `transport.go` |
 | `transport.go` | The stdio and streamable-HTTP transports | `server.go` |
@@ -392,7 +397,7 @@ One version number describes the server: the `version` in `serverInfo`, in
 [`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), in the registry
 entry, and in `server.json` here. Every version has a `vX.Y.Z` tag, a
 [GitHub release](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases) and a
-[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.4.0**.
+[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.5.0**.
 
 Two things ship on different tracks, and confusing them is how a version string goes stale.
 

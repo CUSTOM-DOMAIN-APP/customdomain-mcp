@@ -109,6 +109,7 @@ HTTPS.
 | Argument | Type | Required |
 | --- | --- | --- |
 | `domain` | string | yes |
+| `applicationId` | string | no |
 
 Returns:
 
@@ -148,6 +149,10 @@ so a repeat call is safe and returns the original connection. Tell the user
 `managed: true` means the control plane holds a durable grant and can re-apply
 the connection later without the user. It is always `false` on a fresh create,
 because the grant is only stored once the user consents on the automatic rail.
+
+`applicationId` names the application the connection is created on. A console API key may name any
+application of its account. An agent token and a client credentials token act only in their own application,
+and naming another is refused.
 
 ## check-connection-status
 
@@ -236,10 +241,14 @@ and the connection.
 | Argument | Type | Required |
 | --- | --- | --- |
 | `connectionId` | string | yes |
+| `confirm` | string | yes |
 
 Returns `{ success, connectionId, status: "disconnected", domain?, message? }`.
 
-This takes the domain offline. Confirm with the user before calling it.
+This takes the domain offline. Ask the user first, and send the domain they confirmed in `confirm`: it must be the
+domain being removed (case, scheme and a trailing dot do not matter). Without it the control plane answers
+`confirmation_required`, and with another domain `confirmation_mismatch`. Nothing is removed in either case.
+It needs the `domains:disconnect` scope, which is separate from `domains:connect`.
 
 ## forward-domain
 
@@ -305,6 +314,103 @@ non-managed connection can only be repaired at the customer's DNS provider.
 
 ---
 
+## check-certificate-status
+
+Read the HTTPS certificate of a connected domain. Read-only; scope `domains:read`.
+
+| Argument | Type | Required |
+| --- | --- | --- |
+| `connectionId` | string | yes |
+
+Returns `{ connectionId, certificate, wwwCertificate?, renewal? }`. `certificate` (and `wwwCertificate`, present when
+the apex redirects `www`) is `{ host, status, attention?, issuer?, issuedAt?, expiresAt?, daysLeft?, nextRenewalAt?,
+failingSince?, failureCount?, lastError? }`. Certificates renew on their own. `attention` is empty when nothing needs a
+person, and otherwise one of `failed`, `renewal_failing`, `expired` or `expiring`. `renewal` says in a sentence how
+renewal works.
+
+---
+
+## recheck-connection
+
+Run a connection's DNS check now instead of waiting for the next scheduled one. Scope `domains:connect`, because a
+failed connection re-enters verification.
+
+| Argument | Type | Required |
+| --- | --- | --- |
+| `connectionId` | string | yes |
+
+Returns `{ connectionId, domain, status, previousStatus, connected, retried, recordsResolved, checked[], errorCode?,
+errorMessage? }`. `checked[]` is `{ type, host, value, resolved }` per record, and `recordsResolved` is true only when
+every record is visible in public DNS. `retried` is true when a failed connection was put back into verification.
+
+It writes no DNS. Poll `check-connection-status` for the outcome. Use `diagnose-connection` first to see what is
+missing, and recheck once the user has fixed it.
+
+---
+
+## diagnose-connection
+
+Explain, record by record, what public DNS shows for a connection and what the user still has to do. Read-only; scope
+`domains:read`. It never changes the connection.
+
+| Argument | Type | Required |
+| --- | --- | --- |
+| `connectionId` | string | yes |
+
+Returns `{ connectionId, domain, zone, provider?, status, allFound, foundCount, total, records[], issues[],
+nextCheckSeconds? }`. Each record is `{ type, host, value, status, observed?, observedLabel?, atProvider? }` where
+`status` is `found`, `missing` or `mismatch` against what DNS answers today. Each issue is `{ code, severity, host?,
+observed?, message }` and explains a record that is not found, for example a hostname typed in the Name field, a proxy
+in front, or a leftover record.
+
+---
+
+## check-billing-status
+
+Check whether the workspace may connect new domains right now. Read-only; scope `domains:read`. It takes no
+arguments and reads only this workspace.
+
+Returns `{ configured, restricted, attention, code?, title?, details?, billingUrl?, plan?, usage? }`. When
+`restricted` is true, `code` is `billing_required` and `details` say where an owner or admin fixes billing. `plan` is
+`{ id, name, hardCap }` and `usage` is `{ used, quota, period }`.
+
+Use it after a `billing_required` failure, or before a batch of connects.
+
+---
+
+## list-domain-orders
+
+List the domain purchases made through the account, newest first. Read-only; scope `domains:read`. It reads only this
+workspace.
+
+| Argument | Type | Required |
+| --- | --- | --- |
+| `limit` | integer | no |
+
+Returns `{ orders[], count, truncated?, total?, message? }`, where each order is `{ orderId, domain, registrar?,
+status, regOrderId?, jobId?, link?, freeDomain?, createdAt }`. `limit` defaults to 50 and is at most 200. When more
+orders exist than were returned, `truncated` is true and `total` says how many there are.
+
+Use `check-order-status` for one order.
+
+---
+
+## Scopes
+
+Every tool needs one scope. A delegated agent token must carry it.
+
+| Scope | Tools |
+| --- | --- |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email` |
+| `domains:disconnect` | `disconnect-domain` |
+| `domains:purchase` | `create-domain-order` |
+
+A token without the tool's scope gets the JSON-RPC error `-32003` (`insufficient_scope`), which names the scope it needed.
+`domains:disconnect` is its own scope so a grant that may set domains up cannot also remove them.
+
+---
+
 ## Errors
 
 Bad input fails at the JSON-RPC layer with `-32602` and a message naming the
@@ -318,5 +424,6 @@ A call the control plane refused comes back as a normal tool result:
 
 `error` is the control plane's code when it sent one, otherwise the tool's
 fallback: `connect_failed`, `order_failed`, `reapply_failed`,
-`disconnect_failed`, `forward_failed`, `add_email_failed`. Branch on `error`,
+`disconnect_failed`, `forward_failed`, `add_email_failed`, `certificate_failed`,
+`recheck_failed`, `diagnose_failed`, `billing_failed`, `orders_failed`. Branch on `error`,
 show `message`.
