@@ -9,6 +9,17 @@ its entry below.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### The server
+
+- `connect-domain` says where the records point: the CustomDomain™ edge by default, or the application's own
+  infrastructure when it routes domains there (a connect target). It no longer says the records always point at the
+  edge. A connected domain keeps that routing when the application changes its target, until it is moved through
+  `POST /v1/connections/{id}:retarget`. For an application on its own infrastructure, the link is never the
+  one-click Domain Connect authorization, and a root domain its DNS provider cannot point at a hostname is refused
+  with `apex_not_supported` when the application has no root addresses.
+
 ## [0.5.0] (2026-10-03)
 
 Five tools, a scope of its own for removal, and the first registry version that links this repository. The server

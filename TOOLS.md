@@ -103,8 +103,11 @@ connection status. An id that matches neither returns `{ orderId, status:
 
 ## connect-domain
 
-Attach a domain the customer already owns and set it up to serve with automatic
-HTTPS.
+Attach a domain the customer already owns and set it up to serve. By default the
+records point at the CustomDomain™ edge, which serves the domain with automatic
+HTTPS. When the application routes domains to its own infrastructure (a connect
+target), they point at that infrastructure instead, which serves the domain and
+its HTTPS.
 
 | Argument | Type | Required |
 | --- | --- | --- |
@@ -131,9 +134,18 @@ Returns:
 
 `records` is the authoritative desired record set: exactly what must exist at the
 customer's DNS provider for the domain to go live. Relay it to the user rather
-than sending them to a web panel. The control plane synthesizes the default edge
-record before anything is applied, so the array is populated even on the first
-call.
+than sending them to a web panel. The control plane synthesizes the default
+record before anything is applied (the edge, or the application's own
+infrastructure), so the array is populated even on the first call. The domain
+keeps that routing once it is connected: if the application later changes where
+its domains point, this domain moves only when it is moved explicitly
+(`POST /v1/connections/{id}:retarget`), so `records` stays what it connected with.
+
+For an application routed to its own infrastructure, `link` never offers the
+one-click Domain Connect authorization (those templates point at the edge), and
+a root domain at a DNS provider that cannot point a root at a hostname is refused
+with `apex_not_supported` unless the application has root addresses
+(`apex_ipv4`) to give it. Connect `www` instead, or add the addresses.
 
 `link` is not always the same thing, which is the part integrators get wrong. It
 is a one-click provider authorization only when the domain's DNS provider
