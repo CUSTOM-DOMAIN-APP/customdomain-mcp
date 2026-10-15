@@ -326,7 +326,7 @@ the judgment live one hop away.
 ├── README.md      # this file: what the server is, how to point a client at it, how it is built
 ├── TOOLS.md       # the tool contract: every argument, scope, response field, status value and error code
 ├── CHANGELOG.md   # one entry per server version, matching the tags and GitHub releases
-├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.5.0, remote endpoint, tool scopes
+├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.5.0, remote endpoint
 ├── glama.json     # Glama directory ownership claim
 └── LICENSE        # MIT
 ```

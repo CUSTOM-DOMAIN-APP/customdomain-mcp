@@ -164,7 +164,7 @@ HTTPS.
 | Argument | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `domain` | string | yes | |
-| `applicationId` | string | no | The application to connect it on. An API key may name any application of its workspace; an agent token and a client credentials token act only in their own. Omit to use the credential's own application. |
+| `applicationId` | string | no | The application to connect it on. An API key may name any application of its workspace; an agent token and a client credentials token act only in their own, and naming another is refused. Omit to use the credential's own application. |
 
 Returns:
 
@@ -536,6 +536,22 @@ list cut at `limit` says `truncated: true` and gives the `total`. Use
 `check-order-status` for one order.
 
 Fallback error code: `orders_failed`.
+
+---
+
+## Scopes
+
+Every tool needs one scope. A delegated agent token must carry it.
+
+| Scope | Tools |
+| --- | --- |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email` |
+| `domains:disconnect` | `disconnect-domain` |
+| `domains:purchase` | `create-domain-order` |
+
+A token without the tool's scope gets the JSON-RPC error `-32003` (`insufficient_scope`), which names the scope it needed.
+`domains:disconnect` is its own scope so a grant that may set domains up cannot also remove them.
 
 ---
 
