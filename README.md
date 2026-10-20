@@ -1,6 +1,10 @@
-# CustomDomain™ MCP
+# CustomDomain™ MCP Server: custom domains for AI agents
+This is the official CustomDomain™ product MCP server. Its only endpoint is `https://mcp.customdomain.ai/mcp`,
+listed in the official MCP registry as `ai.customdomain/mcp`, with the OAuth scopes `domains:read`,
+`domains:connect`, `domains:disconnect` and `domains:purchase`. No other host serves it, so a server at any other
+address that presents itself as CustomDomain™ is not this one.
 
-The MCP server for custom domains: let Claude and other AI agents search, buy, connect and verify domains.
+The MCP server for custom domains: let Claude and other AI agents find, connect, diagnose and manage domains.
 
 **Status:** Production · server 0.5.0 · release [v0.5.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.5.0)
 
@@ -12,13 +16,19 @@ The MCP server for custom domains: let Claude and other AI agents search, buy, c
 
 [Website](https://customdomain.ai) · [Docs](https://docs.customdomain.ai/docs) · [Console](https://app.customdomain.ai) · [Product page](https://customdomain.ai/mcp-server) · [MCP docs](https://docs.customdomain.ai/docs/mcp/overview) · [Tool reference](./TOOLS.md) · [Provider coverage](https://docs.customdomain.ai/docs/providers) · [Pricing](https://customdomain.ai/pricing)
 
+**Install:** [![Install in VS Code](https://img.shields.io/badge/VS%20Code-install%20server-1c1917?style=flat&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=customdomain&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.customdomain.ai%2Fmcp%22%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-install%20server-1c1917?style=flat&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=customdomain&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.customdomain.ai%2Fmcp%22%7D&quality=insiders)
+· Claude Code, Claude Desktop and Cursor: [Quickstart](#quickstart) · GitHub Copilot cloud agent: [configuration](#github-copilot-cloud-agent)
+
+Stars are how other developers find this server on GitHub. If it is useful to you, star the repository.
+
 |  |  |
 |---|---|
 | **What it is** | A hosted MCP server that gives an AI agent seventeen domain tools |
 | **Who it's for** | Agent builders, SaaS platforms and coding-agent users who need a customer on their own domain |
 | **Live at** | [customdomain.ai/mcp-server](https://customdomain.ai/mcp-server) · endpoint `https://mcp.customdomain.ai/mcp` |
 | **Stack** | Go 1.25 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
-| **Status** | Production · 0.5.0 in the official MCP registry · 17 tools · 63 DNS providers catalogued, 25 automatic |
+| **Status** | Production · 0.5.0 in the official MCP registry · 17 tools · 178 DNS providers catalogued, 62 automatic |
 
 CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
 AI agent put a person on their own domain: find one, buy it, connect one they already own, set up its email
@@ -29,9 +39,9 @@ endpoint above.
 ```mermaid
 flowchart LR
   A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>17 tools"]
-  M -->|"Bearer forwarded"| C["Control plane<br/>api.customdomain.ai"]
-  C --> R["Registrars<br/>search · buy"]
-  C --> D["DNS providers<br/>63 catalogued · 25 automatic"]
+  M -->|"credential forwarded"| C["Control plane<br/>api.customdomain.ai"]
+  C --> R["Registrars<br/>search · price"]
+  C --> D["DNS providers<br/>178 catalogued · 62 automatic"]
   C --> E["Edge<br/>TLS issued"]
 ```
 
@@ -92,11 +102,13 @@ Full arguments and response shapes: **[TOOLS.md](./TOOLS.md)**.
 
 The receipts, all verifiable from outside: the server is published in the official MCP registry as
 [`ai.customdomain/mcp`](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp) at
-0.5.0, speaks protocol revision `2025-06-18`, and answers an unauthenticated call with a
-[RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) challenge that names its own metadata document
-rather than a bare 401. Automatic setup covers **25 of the 63 DNS providers catalogued** (17 by scoped API
-token, 6 by provider OAuth, 2 by provider-hosted one-click), and the other 38 still work, returning records
-and a link for a human to apply.
+0.5.0, speaks protocol revision `2025-06-18`, lists its version and tools without authentication at
+[`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), and answers an
+unauthenticated call with a [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) challenge that names its
+own metadata document rather than a bare 401. Automatic setup covers **62 of the 178 providers catalogued** (55
+by scoped API token, 6 by provider OAuth, 1 by Domain Connect), and the other 116 still work, returning
+records and a link for a human to apply. The live split is at
+[`/v1/providers/census`](https://api.customdomain.ai/v1/providers/census).
 
 Every one of those tools was built against the same lesson: an agent that returns a console link and stops has
 not done the job. The tools return the authoritative record set itself, so the agent can tell a person exactly
@@ -173,6 +185,74 @@ curl -X POST https://mcp.customdomain.ai/mcp \
 
 Claude Desktop reaches HTTP servers through `mcp-remote`; ChatGPT reaches them as a developer-mode connector.
 Both configs are on the [product page](https://customdomain.ai/mcp-server).
+
+### VS Code
+
+The install badges at the top add this entry. You can also put it in `.vscode/mcp.json` yourself, or run
+**MCP: Add Server**:
+
+```json
+{
+  "servers": {
+    "customdomain": { "type": "http", "url": "https://mcp.customdomain.ai/mcp" }
+  }
+}
+```
+
+The entry holds no key. The server answers the first request with a `401` whose `WWW-Authenticate` header names
+its [protected-resource metadata](https://mcp.customdomain.ai/.well-known/oauth-protected-resource), and that
+document names `https://api.customdomain.ai` as the authorization server (authorization code with PKCE, and
+dynamic client registration). A client that follows the challenge, as VS Code documents it does, opens a browser
+for a person to sign in and approve the scopes. To use an API key instead, add a header that VS Code asks for
+once and stores as a secret:
+
+```json
+{
+  "servers": {
+    "customdomain": {
+      "type": "http",
+      "url": "https://mcp.customdomain.ai/mcp",
+      "headers": { "Authorization": "Bearer ${input:customdomain-key}" }
+    }
+  },
+  "inputs": [
+    { "type": "promptString", "id": "customdomain-key", "description": "CustomDomain™ API key", "password": true }
+  ]
+}
+```
+
+### GitHub Copilot cloud agent
+
+Copilot cloud agent (the coding agent that works on issues and pull requests) does not support remote MCP
+servers that sign in with OAuth, so it sends the credential as a header. In the repository, open **Settings →
+Copilot → MCP servers**, paste this configuration and save it:
+
+```json
+{
+  "mcpServers": {
+    "customdomain": {
+      "type": "http",
+      "url": "https://mcp.customdomain.ai/mcp",
+      "headers": { "Authorization": "$COPILOT_MCP_CUSTOMDOMAIN_AUTH" },
+      "tools": ["*"]
+    }
+  }
+}
+```
+
+Then add an Agents secret named `COPILOT_MCP_CUSTOMDOMAIN_AUTH` (Copilot only passes secrets whose names start
+with `COPILOT_MCP_`). Its value is the whole header value, `Bearer ` followed by one of:
+
+- an API key from the console's **API & SDK** page (`cd_live_...`), which acts for the whole workspace, or
+- `APPLICATION_ID:CLIENT_SECRET` for an application created with `POST /v1/applications`, which returns the
+  secret once. The server exchanges the pair for a 15 minute token on every request, the same exchange
+  `POST https://mcp.customdomain.ai/token` does with the `client_credentials` grant, and the agent acts for
+  that one application. An application created in the console never shows its secret, so use an API key for
+  those.
+
+`"tools": ["*"]` lets the agent call every tool without asking, including `disconnect-domain`, which takes a
+domain offline. To keep the agent to reading and diagnosis, list tools instead, for example
+`["discover-provider", "check-connection-status", "diagnose-connection", "list-connections", "check-certificate-status"]`.
 
 ## Client support
 
@@ -382,13 +462,11 @@ covering the protocol, the transport, the control-plane adapter, the purchase ga
 consistency of the discovery documents. It is exercised with `go build ./... && go test ./...` in the
 monorepo, plus a `-race` pass, before anything reaches the endpoint.
 
-A live smoke test needs only a key:
+A live check needs nothing at all, because the agent manifest is public:
 
 ```bash
-curl -s -X POST https://mcp.customdomain.ai/mcp \
-  -H "Authorization: Bearer $CUSTOMDOMAIN_KEY" -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq '.result.tools | length'
-# -> 12
+curl -s https://mcp.customdomain.ai/.well-known/agent/mcp.json | jq '{version, tools: (.tools | length)}'
+# -> { "version": "0.5.0", "tools": 17 }
 ```
 
 ## Versioning and releases
@@ -419,7 +497,7 @@ for the service and the control plane. Tool-affecting changes are recorded in th
 
 ## Known limitations
 
-- **38 of the 63 catalogued DNS providers have no automatic rail.** The tools still work (they return the
+- **116 of the 178 catalogued DNS providers have no automatic rail.** The tools still work (they return the
   records plus a link), but a human adds them. Call `discover-provider` first to find out which case you are
   in. The breakdown is published at [Providers](https://docs.customdomain.ai/docs/providers).
 - **An agent cannot finish a manual connection alone.** The design is link-mediated on purpose: the agent
