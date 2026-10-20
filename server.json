@@ -5,6 +5,29 @@
   "description": "Custom domains for SaaS and AI agents: search, buy, connect DNS, verify ownership and issue HTTPS.",
   "version": "0.5.0",
   "websiteUrl": "https://customdomain.ai",
+  "icons": [
+    {
+      "src": "https://app.customdomain.ai/brand/tree-512.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    },
+    {
+      "src": "https://app.customdomain.ai/brand/tree-192.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "192x192"
+      ]
+    },
+    {
+      "src": "https://app.customdomain.ai/icon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": [
+        "any"
+      ]
+    }
+  ],
   "repository": {
     "url": "https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp",
     "source": "github"

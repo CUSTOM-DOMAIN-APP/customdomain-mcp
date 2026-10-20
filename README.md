@@ -1,4 +1,8 @@
-# CustomDomain™ MCP
+# CustomDomain™ MCP Server: custom domains for AI agents
+This is the official CustomDomain™ product MCP server. Its only endpoint is `https://mcp.customdomain.ai/mcp`,
+listed in the official MCP registry as `ai.customdomain/mcp`, with the OAuth scopes `domains:read`,
+`domains:connect`, `domains:disconnect` and `domains:purchase`. No other host serves it, so a server at any other
+address that presents itself as CustomDomain™ is not this one.
 
 The MCP server for custom domains: let Claude and other AI agents find, connect, diagnose and manage domains.
 
@@ -11,6 +15,12 @@ The MCP server for custom domains: let Claude and other AI agents find, connect,
 [![license](https://img.shields.io/badge/license-MIT-1c1917?style=flat)](./LICENSE)
 
 [Website](https://customdomain.ai) · [Docs](https://docs.customdomain.ai/docs) · [Console](https://app.customdomain.ai) · [Product page](https://customdomain.ai/mcp-server) · [MCP docs](https://docs.customdomain.ai/docs/mcp/overview) · [Tool reference](./TOOLS.md) · [Provider coverage](https://docs.customdomain.ai/docs/providers) · [Pricing](https://customdomain.ai/pricing)
+
+**Install:** [![Install in VS Code](https://img.shields.io/badge/VS%20Code-install%20server-1c1917?style=flat&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=customdomain&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.customdomain.ai%2Fmcp%22%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-install%20server-1c1917?style=flat&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=customdomain&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.customdomain.ai%2Fmcp%22%7D&quality=insiders)
+· Claude Code, Claude Desktop and Cursor: [Quickstart](#quickstart) · GitHub Copilot cloud agent: [configuration](#github-copilot-cloud-agent)
+
+Stars are how other developers find this server on GitHub. If it is useful to you, star the repository.
 
 |  |  |
 |---|---|
@@ -201,6 +211,74 @@ curl -X POST https://mcp.customdomain.ai/mcp \
 
 The console's **MCP server** page has copy-and-paste setup for these and for Codex, VS Code, ChatGPT and other
 clients, plus a connection test.
+
+### VS Code
+
+The install badges at the top add this entry. You can also put it in `.vscode/mcp.json` yourself, or run
+**MCP: Add Server**:
+
+```json
+{
+  "servers": {
+    "customdomain": { "type": "http", "url": "https://mcp.customdomain.ai/mcp" }
+  }
+}
+```
+
+The entry holds no key. The server answers the first request with a `401` whose `WWW-Authenticate` header names
+its [protected-resource metadata](https://mcp.customdomain.ai/.well-known/oauth-protected-resource), and that
+document names `https://api.customdomain.ai` as the authorization server (authorization code with PKCE, and
+dynamic client registration). A client that follows the challenge, as VS Code documents it does, opens a browser
+for a person to sign in and approve the scopes. To use an API key instead, add a header that VS Code asks for
+once and stores as a secret:
+
+```json
+{
+  "servers": {
+    "customdomain": {
+      "type": "http",
+      "url": "https://mcp.customdomain.ai/mcp",
+      "headers": { "Authorization": "Bearer ${input:customdomain-key}" }
+    }
+  },
+  "inputs": [
+    { "type": "promptString", "id": "customdomain-key", "description": "CustomDomain™ API key", "password": true }
+  ]
+}
+```
+
+### GitHub Copilot cloud agent
+
+Copilot cloud agent (the coding agent that works on issues and pull requests) does not support remote MCP
+servers that sign in with OAuth, so it sends the credential as a header. In the repository, open **Settings →
+Copilot → MCP servers**, paste this configuration and save it:
+
+```json
+{
+  "mcpServers": {
+    "customdomain": {
+      "type": "http",
+      "url": "https://mcp.customdomain.ai/mcp",
+      "headers": { "Authorization": "$COPILOT_MCP_CUSTOMDOMAIN_AUTH" },
+      "tools": ["*"]
+    }
+  }
+}
+```
+
+Then add an Agents secret named `COPILOT_MCP_CUSTOMDOMAIN_AUTH` (Copilot only passes secrets whose names start
+with `COPILOT_MCP_`). Its value is the whole header value, `Bearer ` followed by one of:
+
+- an API key from the console's **API & SDK** page (`cd_live_...`), which acts for the whole workspace, or
+- `APPLICATION_ID:CLIENT_SECRET` for an application created with `POST /v1/applications`, which returns the
+  secret once. The server exchanges the pair for a 15 minute token on every request, the same exchange
+  `POST https://mcp.customdomain.ai/token` does with the `client_credentials` grant, and the agent acts for
+  that one application. An application created in the console never shows its secret, so use an API key for
+  those.
+
+`"tools": ["*"]` lets the agent call every tool without asking, including `disconnect-domain`, which takes a
+domain offline. To keep the agent to reading and diagnosis, list tools instead, for example
+`["discover-provider", "check-connection-status", "diagnose-connection", "list-connections", "check-certificate-status"]`.
 
 ## Client support
 
