@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "ai.customdomain/mcp",
   "title": "CustomDomain™",
-  "description": "Custom domains for SaaS and AI agents: search, buy, connect DNS, verify ownership and issue HTTPS.",
-  "version": "0.5.0",
+  "description": "Custom domains for SaaS and AI agents: search, register, connect DNS, and issue HTTPS over MCP.",
+  "version": "0.6.0",
   "websiteUrl": "https://customdomain.ai",
   "icons": [
     {
@@ -37,5 +37,32 @@
       "type": "streamable-http",
       "url": "https://mcp.customdomain.ai/mcp"
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "scopes": ["domains:read", "domains:connect", "domains:disconnect", "domains:purchase"],
+      "tools": [
+        { "name": "search-domain-availability", "scope": "domains:read" },
+        { "name": "generate-domain-suggestions", "scope": "domains:read" },
+        { "name": "create-domain-order", "scope": "domains:purchase" },
+        { "name": "connect-domain", "scope": "domains:connect" },
+        { "name": "check-connection-status", "scope": "domains:read" },
+        { "name": "check-order-status", "scope": "domains:read" },
+        { "name": "reapply-connection", "scope": "domains:connect" },
+        { "name": "disconnect-domain", "scope": "domains:disconnect" },
+        { "name": "discover-provider", "scope": "domains:read" },
+        { "name": "forward-domain", "scope": "domains:connect" },
+        { "name": "add-email", "scope": "domains:connect" },
+        { "name": "list-connections", "scope": "domains:read" },
+        { "name": "check-certificate-status", "scope": "domains:read" },
+        { "name": "recheck-connection", "scope": "domains:connect" },
+        { "name": "diagnose-connection", "scope": "domains:read" },
+        { "name": "check-billing-status", "scope": "domains:read" },
+        { "name": "list-domain-orders", "scope": "domains:read" },
+        { "name": "check-nameserver-status", "scope": "domains:read" },
+        { "name": "migrate-nameservers", "scope": "domains:connect" },
+        { "name": "rollback-nameservers", "scope": "domains:connect" }
+      ]
+    }
+  }
 }
