@@ -6,7 +6,7 @@ address that presents itself as CustomDomain™ is not this one.
 
 The MCP server for custom domains: let Claude and other AI agents find, connect, diagnose and manage domains.
 
-**Status:** Production · server 0.5.0 · release [v0.5.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.5.0)
+**Status:** Production · server 0.6.0 · release [v0.6.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.6.0)
 
 [![live](https://img.shields.io/badge/live-mcp.customdomain.ai-1c1917?style=flat)](https://customdomain.ai/mcp-server)
 [![MCP registry](https://img.shields.io/badge/MCP%20registry-ai.customdomain%2Fmcp-1c1917?style=flat)](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp)
@@ -24,11 +24,11 @@ Stars are how other developers find this server on GitHub. If it is useful to yo
 
 |  |  |
 |---|---|
-| **What it is** | A hosted MCP server that gives an AI agent seventeen domain tools |
+| **What it is** | A hosted MCP server that gives an AI agent twenty domain tools |
 | **Who it's for** | Agent builders, SaaS platforms and coding-agent users who need a customer on their own domain |
 | **Live at** | [customdomain.ai/mcp-server](https://customdomain.ai/mcp-server) · endpoint `https://mcp.customdomain.ai/mcp` |
-| **Stack** | Go 1.25 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
-| **Status** | Production · 0.5.0 in the official MCP registry · 17 tools · 178 DNS providers catalogued, 62 automatic |
+| **Stack** | Go 1.26 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
+| **Status** | Production · 0.6.0 in the official MCP registry · 20 tools · 178 DNS providers catalogued, 62 automatic |
 
 CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
 AI agent put a person on their own domain: connect a domain they already own, set up its email records,
@@ -38,7 +38,7 @@ client at the endpoint above.
 
 ```mermaid
 flowchart LR
-  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>17 tools"]
+  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>20 tools"]
   M -->|"credential forwarded"| C["Control plane<br/>api.customdomain.ai"]
   C --> R["Registrars<br/>search · price"]
   C --> D["DNS providers<br/>178 catalogued · 62 automatic"]
@@ -78,7 +78,7 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
 
 ## What it does
 
-Seventeen tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow
+Twenty tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow
 you have to assemble:
 
 - **Check whether a domain can be registered**, with live purchase and renewal pricing: `search-domain-availability`
@@ -102,12 +102,16 @@ you have to assemble:
   started: `list-connections`
 - **Check whether the workspace may connect new domains** before a batch, or after a `billing_required`
   refusal: `check-billing-status`
+- **Move a domain's nameservers to the application's DNS host**, records copied first, mail included, so its
+  records are kept correct from then on: `migrate-nameservers`
+- **Follow that move** to the end, and relay the step a person has to take: `check-nameserver-status`
+- **Move the nameservers back**, to the old ones or to the registrar's own DNS: `rollback-nameservers`
 
 Full arguments, scopes and response shapes: **[TOOLS.md](./TOOLS.md)**.
 
 The receipts, all verifiable from outside: the server is published in the official MCP registry as
 [`ai.customdomain/mcp`](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp) at
-0.5.0, speaks protocol revision `2025-06-18`, lists its version and tools without authentication at
+0.6.0, speaks protocol revision `2025-06-18`, lists its version and tools without authentication at
 [`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), and answers an
 unauthenticated call with a [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) challenge that names its
 own metadata document rather than a bare 401. Automatic setup covers **62 of the 178 providers catalogued** (55
@@ -135,6 +139,9 @@ what to add, and the completion signal is a boolean rather than a status string 
 - **A support agent answering "why is my domain not working yet".** `diagnose-connection` says which record is
   missing or wrong and why (a hostname typed into the Name field, a proxy in front), and `recheck-connection`
   confirms the fix without waiting for the next scheduled check.
+- **A platform that keeps its users' domains working.** When the application maintains domains, the agent asks
+  the person, calls `migrate-nameservers` with `confirm: true`, and polls `check-nameserver-status` until `done`,
+  relaying `nextStep` whenever the person has to act at their registrar. `rollback-nameservers` undoes it.
 
 Buying a domain through MCP is built but not available on the hosted service: purchases are
 authorization-gated, and no purchase authorization callback is configured there, so `create-domain-order`
@@ -148,8 +155,10 @@ from a vetted template, so the worst thing a prompt-injected agent can do here i
 not write an arbitrary `MX` record into a customer's zone. The security model is the argument list. On top of
 it, a delegated agent token carries only the scopes a person approved, and removing a domain is its own scope
 and needs the domain named back in `confirm`. Paid registration is gated separately: `create-domain-order`
-places an order only after the integrator's purchase-authorization callback approves it, and an unconfigured
-callback denies every purchase.
+needs the domain repeated in `confirm_domain`, and places an order only after the integrator's
+purchase-authorization callback approves it; an unconfigured callback denies every purchase. A nameserver move
+needs `confirm: true`, and an agent token cannot choose where the nameservers go: the application's setting
+decides.
 
 The second reason is discovery. An agent that has never heard of this product can find it: the server is in
 the official MCP registry, it publishes an agent manifest and an OAuth protected-resource document at
@@ -300,8 +309,10 @@ template turns those into records. `forward-domain` takes a redirect target. Nei
 **`connected: true` is the completion signal.** Status strings are informative; the boolean is what you branch
 on, and it stays stable if the status enum ever grows.
 
-**Removing a domain names it twice.** `disconnect-domain` takes the `connectionId` and `confirm`, the domain
-the person confirmed. A call without `confirm` is refused before anything happens.
+**A call that cannot be taken back carries the person's yes.** `disconnect-domain` takes the `connectionId`
+and `confirm`, the domain the person confirmed; `create-domain-order` repeats the domain in `confirm_domain`;
+`migrate-nameservers` and `rollback-nameservers` take `confirm: true`. A call without it is refused before
+anything happens.
 
 There is also no ownership-challenge step: no tool asks for or checks a TXT verification record. Control of
 the domain is proven by the rail that writes the records (an OAuth authorization at the provider, a one-click
@@ -339,8 +350,8 @@ server verifies them locally against the control plane's JWKS, refuses one issue
 
 | Scope | Tools |
 |---|---|
-| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `check-connection-status`, `check-order-status`, `discover-provider`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-billing-status`, `list-domain-orders` |
-| `domains:connect` | `connect-domain`, `reapply-connection`, `forward-domain`, `add-email`, `recheck-connection` |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `check-connection-status`, `check-order-status`, `discover-provider`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-billing-status`, `list-domain-orders`, `check-nameserver-status` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `forward-domain`, `add-email`, `recheck-connection`, `migrate-nameservers`, `rollback-nameservers` |
 | `domains:disconnect` | `disconnect-domain` |
 | `domains:purchase` | `create-domain-order` |
 
@@ -404,7 +415,7 @@ the judgment live one hop away.
 ├── README.md      # this file: what the server is, how to point a client at it, how it is built
 ├── TOOLS.md       # the tool contract: every argument, scope, response field, status value and error code
 ├── CHANGELOG.md   # one entry per server version, matching the tags and GitHub releases
-├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.5.0, remote endpoint
+├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.6.0, remote endpoint, tools and scopes
 ├── glama.json     # Glama directory ownership claim
 └── LICENSE        # MIT
 ```
@@ -416,8 +427,9 @@ plane it calls. Named here so the boundaries are legible, not linked, because th
 
 | Module | Purpose | Talks to |
 |---|---|---|
-| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the seventeen tools in a fixed order; checks scope and rate before a tool runs | `tools.go`, `usage.go` |
+| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the twenty tools in a fixed order; checks scope and rate before a tool runs | `tools.go`, `usage.go` |
 | `tools.go` | Tool definitions, JSON schemas, annotations, handlers and the one failure shape | `client.go` |
+| `nameservers.go` | The three nameserver tools' handlers: `confirm: true`, and no `target` or `nameservers` from an agent token | `client.go` |
 | `scopes.go` | The tool to scope map, and the construction check that every tool declares exactly one scope | `server.go` |
 | `ratelimit.go` | The token bucket per caller (5 a second, bursts of 20 by default) | `server.go` |
 | `jsonrpc.go` | JSON-RPC 2.0 framing and error codes | `transport.go` |
@@ -425,6 +437,7 @@ plane it calls. Named here so the boundaries are legible, not linked, because th
 | `client.go` | The `ControlPlane` port: the interface every tool handler calls | implemented by `httpclient.go` |
 | `httpclient.go` | HTTP adapter onto the control-plane REST API | `api.customdomain.ai` |
 | `clientinfo.go` | Passes the caller's address on, so the control plane's per-address limit sees each user | control plane |
+| `origin.go` | The `Origin` check on `/mcp` (a browser origin must be the server's own or one the operator lists, else 403) and the CORS preflight answer | none |
 | `auth.go` | Bearer extraction, `POST /token`, and the RFC 9728 `WWW-Authenticate` challenge | control plane |
 | `agenttoken.go` | Local ES256 verification of delegated agent tokens (signature, expiry, audience) | control-plane JWKS |
 | `purchaseauth.go` | The fail-closed purchase-authorization callback, checked before any paid order | integrator callback |
@@ -473,7 +486,7 @@ sequenceDiagram
 - **`POST /v1/connections` is idempotent per application and domain**, so a repeated `connect-domain` resumes
   the existing connection and returns `already_connected: true` rather than creating a second one.
 
-<!-- verified against services/mcp at the production commit and the live /.well-known/agent/mcp.json, 2026-10-14 -->
+<!-- verified against services/mcp on the monorepo's main (98c26456, the 0.6.0 release) and the live /.well-known/agent/mcp.json (0.6.0, 20 tools), 2026-10-21 -->
 
 ## Configuration
 
@@ -499,6 +512,7 @@ repository.
 | `MCP_PUBLIC_BASE` | no | `https://mcp.customdomain.ai` | Public origin stamped into the discovery documents, and the base of the agent token audience |
 | `MCP_AUTH_SERVER` | no | `https://api.customdomain.ai` | Public origin of the control plane that issues agent tokens; named first in the protected-resource metadata |
 | `MCP_AGENT_JWKS_URL` | no | unset | JWKS for delegated agent tokens. **Unset leaves the agent-token path dark.** The hosted service sets it. |
+| `MCP_ALLOWED_ORIGINS` | no | unset | Browser origins (`scheme://host[:port]`, comma separated) allowed to call `/mcp` besides the server's own. Any other `Origin` gets `403`; a request with no `Origin` (every non-browser client) is unaffected. No wildcard. Unset on the hosted service. |
 | `MCP_TENANT_RPS` | no | `5` | Tool calls per second per caller. `0` turns the limit off. |
 | `MCP_TENANT_BURST` | no | `20` | Tool calls per caller in one burst |
 | `MCP_LINK_BASE` | no | console URL | Prefix for the guided-DNS fallback links returned to agents |
@@ -509,7 +523,7 @@ repository.
 | `JUSTEASY_MCP_USAGE_KEY` | no | unset | Enables usage recording; unset makes the recorder a no-op. `CUSTOMDOMAIN_MCP_USAGE_KEY` is read first, and `MCP_USAGE_INGEST_KEY` is a fallback. |
 | `MCP_USAGE_INGEST_URL` | no | derived from `MCP_API_BASE` | Where usage batches are posted |
 | `CUSTOMDOMAIN_API_TOKEN` | stdio only | unset | Static control-plane bearer for the local stdio transport (`JUSTEASY_API_TOKEN` is the legacy name) |
-| `MCP_INSECURE` | no | unset | Serves `/mcp` with no bearer check. Refused on production hosts. |
+| `MCP_INSECURE` | no | unset | Serves `/mcp` with no bearer check, for one developer's machine: the server refuses to start unless it listens on a loopback address, and refuses on production hosts. |
 | `SENTRY_ENVIRONMENT` | no | unset | Environment tag; also what the production guard reads |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | no | unset | Opt-in tracing; no-op when unset |
 
@@ -530,9 +544,10 @@ on `description`), and its `version` must match the version published to the reg
 contract: if a tool argument or a response field changes upstream, the change is not done until it is
 reflected there.
 
-The service itself is Go 1.25 and carries **182 tests across 22 test files** (counted 2026-10-14 at the
-production commit) covering the protocol, the transport, the control-plane adapter, the purchase gate, scope
-enforcement, agent token verification, the rate limiter and the consistency of the discovery documents. It is
+The service itself is Go 1.26 and carries **196 tests across 26 test files** (counted 2026-10-21 at the
+0.6.0 commit) covering the protocol, the transport, the control-plane adapter, the purchase gate and its
+confirmation, scope enforcement, agent token verification, the rate limiter, the `Origin` check, the
+nameserver tools and the consistency of the discovery documents. It is
 exercised with `go build ./... && go test ./...` in the monorepo, plus a `-race` pass, before anything reaches
 the endpoint.
 
@@ -540,7 +555,7 @@ A live check needs nothing at all, because the agent manifest is public:
 
 ```bash
 curl -s https://mcp.customdomain.ai/.well-known/agent/mcp.json | jq '{version, tools: (.tools | length)}'
-# -> { "version": "0.5.0", "tools": 17 }
+# -> { "version": "0.6.0", "tools": 20 }
 ```
 
 ## Versioning and releases
@@ -549,7 +564,7 @@ One version number describes the server: the `version` in `serverInfo`, in
 [`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), in the registry
 entry, and in `server.json` here. Every version has a `vX.Y.Z` tag, a
 [GitHub release](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases) and a
-[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.5.0**.
+[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.6.0**.
 
 Two things ship on different tracks, and confusing them is how a version string goes stale.
 
@@ -558,6 +573,15 @@ Two things ship on different tracks, and confusing them is how a version string 
 bumping `version` in `server.json`, re-publishing the manifest to the registry (a published registry version
 is immutable), adding the CHANGELOG entry, and tagging. To roll back: revert the commit and re-publish the
 previous version. Nothing here is on the request path, so a bad commit here cannot take the endpoint down.
+
+The registry knows the namespace `ai.customdomain` from a DNS TXT record on `customdomain.ai`
+(`v=MCPv1; k=ed25519; p=...`), so publishing takes the Ed25519 private key that matches it, held by the
+maintainers and never in this repository, and the registry's `mcp-publisher` CLI:
+
+```bash
+mcp-publisher login dns --domain customdomain.ai --private-key "$REGISTRY_PRIVATE_KEY_HEX"
+mcp-publisher publish server.json
+```
 
 **The endpoint** ships from the private monorepo as a distroless container, with a `/healthz` probe built into
 the binary (`-probe`, because the image has no shell). Clients always reach the deployed build, a tool added
@@ -582,6 +606,11 @@ watch error reporting for the service and the control plane. Tool-affecting chan
   every caller, but today the control plane checks that it names the connection's domain only for a delegated
   agent token. With an API key or a client credentials token, check it yourself before you call.
 - **Cursor cannot sign in yet.** It uses an API key, which carries the whole workspace.
+- **Browser-based clients are refused.** A request from a web page carries an `Origin`, and the hosted service
+  accepts only its own (`MCP_ALLOWED_ORIGINS` is unset there), so such a client gets `403`. Clients that run
+  as a process or on a server send no `Origin` and are not affected.
+- **An agent token cannot choose where a domain's nameservers go.** `migrate-nameservers` moves them to the
+  application's DNS host; naming a `target` or `nameservers` takes the platform's own credential.
 - **No arbitrary DNS writes, ever.** If you need to write records you supply, this is the wrong server; use
   the REST API or your provider's own.
 - **The rate limit is per credential for API keys.** A workspace that spreads calls over several keys gets a

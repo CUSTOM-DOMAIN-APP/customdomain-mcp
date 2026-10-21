@@ -1,6 +1,6 @@
 # Tool reference
 
-Every tool the CustomDomain™ MCP server advertises (server 0.5.0, protocol
+Every tool the CustomDomain™ MCP server advertises (server 0.6.0, protocol
 `2025-06-18`), with its arguments, the scope it needs and the shape of what
 comes back. The server is at `https://mcp.customdomain.ai/mcp` (streamable HTTP,
 JSON-RPC 2.0). See the [README](README.md) for client setup, credentials and
@@ -23,7 +23,7 @@ curl -X POST https://mcp.customdomain.ai/mcp \
 A tool answers with one text content block holding the JSON result, and the same
 object as `structuredContent`.
 
-Three conventions run through everything below.
+Four conventions run through everything below.
 
 **No tool accepts a DNS record.** Records are computed server-side from stored
 templates and returned to you. `add-email` takes mail settings such as an MX host
@@ -37,11 +37,18 @@ the boolean is what you branch on.
 `{ "success": false, "error": "<code>", "message": "...", "details": "..." }`
 with `isError: true`, whichever tool made it. See [Errors](#errors).
 
+**A call that cannot be taken back carries the person's yes.**
+`create-domain-order` repeats the domain in `confirm_domain`,
+`disconnect-domain` names it in `confirm`, and `migrate-nameservers` and
+`rollback-nameservers` take `confirm: true`. Without it the call is refused at
+the JSON-RPC layer and nothing happens. Ask the person first; the server cannot
+tell whether you did.
+
 ---
 
 ## The tools at a glance
 
-The server registers seventeen tools, in this order. Each needs exactly one
+The server registers twenty tools, in this order. Each needs exactly one
 scope. A delegated agent token must carry it; an API key or a client credentials
 token holds no scopes, and the control plane authorizes each call it makes.
 
@@ -49,7 +56,7 @@ token holds no scopes, and the control plane authorizes each call it makes.
 | --- | --- | --- |
 | [`search-domain-availability`](#search-domain-availability) | `domains:read` | read only |
 | [`generate-domain-suggestions`](#generate-domain-suggestions) | `domains:read` | read only |
-| [`create-domain-order`](#create-domain-order) | `domains:purchase` | state changing, idempotent |
+| [`create-domain-order`](#create-domain-order) | `domains:purchase` | **destructive**, not idempotent |
 | [`connect-domain`](#connect-domain) | `domains:connect` | state changing, idempotent |
 | [`check-connection-status`](#check-connection-status) | `domains:read` | read only |
 | [`check-order-status`](#check-order-status) | `domains:read` | read only |
@@ -64,10 +71,15 @@ token holds no scopes, and the control plane authorizes each call it makes.
 | [`diagnose-connection`](#diagnose-connection) | `domains:read` | read only |
 | [`check-billing-status`](#check-billing-status) | `domains:read` | read only, closed world |
 | [`list-domain-orders`](#list-domain-orders) | `domains:read` | read only, closed world |
+| [`check-nameserver-status`](#check-nameserver-status) | `domains:read` | read only |
+| [`migrate-nameservers`](#migrate-nameservers) | `domains:connect` | state changing, idempotent |
+| [`rollback-nameservers`](#rollback-nameservers) | `domains:connect` | **destructive** |
 
-The hints are the MCP tool annotations. The ten read tools carry
-`readOnlyHint: true`. `disconnect-domain` carries `destructiveHint: true`; the
-other state changing tools carry `destructiveHint: false` and
+The hints are the MCP tool annotations. The eleven read tools carry
+`readOnlyHint: true`. `disconnect-domain` and `rollback-nameservers` carry
+`destructiveHint: true`. `create-domain-order` carries `destructiveHint: true`
+and `idempotentHint: false`, because it spends money and every call is another
+purchase. The other state changing tools carry `destructiveHint: false` and
 `idempotentHint: true`. Every tool carries `openWorldHint: true` except
 `check-billing-status` and `list-domain-orders`, which read only CustomDomain™'s
 own records and never reach public DNS or a registrar.
@@ -120,9 +132,10 @@ was found).
 Start a registration through the resolved registrar. **This spends money, and it
 is off on the hosted service today.**
 
-| Argument | Type | Required |
-| --- | --- | --- |
-| `domain` | string | yes |
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `domain` | string | yes | |
+| `confirm_domain` | string | yes | The same domain, repeated as the person confirmed the purchase. Case does not matter. |
 
 Returns `{ success, domain, status, error?, orderId?, jobId?, link?, message? }`.
 An enterprise or direct registrar returns an `orderId`; a sharing registrar
@@ -131,8 +144,15 @@ status is one of `failed`, `cancelled`, `rejected`, `error`, `expired`,
 `unavailable` or `buyer_required`, and then `error` carries the control plane's
 code if the purchase call sent one, otherwise the status.
 
+The tool is annotated destructive and not idempotent: a purchase cannot be
+undone from here, and every call is another purchase.
+
 The order goes through these steps, and stops at the first that refuses:
 
+0. **The person's confirmation.** A missing `confirm_domain`, or one that is not
+   `domain`, fails at the JSON-RPC layer with `-32602` ("Purchase not
+   confirmed") and orders nothing. Ask the person, then send the domain they
+   confirmed.
 1. **Registrar resolution.** No usable rail answers `status: "error"`.
 2. **The purchase authorization callback.** The MCP server calls the integrator's
    callback before any paid order. If no callback is configured, every purchase
@@ -145,8 +165,8 @@ The order goes through these steps, and stops at the first that refuses:
    the domain and the buyer email, so a retried call cannot register twice. That
    route has its own switch and refuses API keys.
 
-On the hosted service no purchase authorization callback is configured, so the
-call answers at step 2:
+On the hosted service no purchase authorization callback is configured, so a
+confirmed call answers at step 2:
 
 ```json
 { "success": false, "domain": "example.com", "status": "rejected", "error": "rejected",
@@ -549,6 +569,104 @@ list cut at `limit` says `truncated: true` and gives the `total`. Use
 
 Fallback error code: `orders_failed`.
 
+## check-nameserver-status
+
+Read the nameserver move of a connection's domain. Read only. Wraps
+`GET /v1/connections/{id}/nameservers`. The guide to what a move is and when to
+offer one is [Nameserver migration](https://docs.customdomain.ai/docs/guides/nameserver-migration).
+
+| Argument | Type | Required |
+| --- | --- | --- |
+| `connectionId` | string | yes |
+
+Returns:
+
+| Field | Meaning |
+| --- | --- |
+| `migrationId`, `connectionId`, `zone` | Which move, of which connection and domain. |
+| `state` | `pending`, `copying`, `needs_review`, `needs_dnssec_off`, `waiting_ds`, `setting`, `propagating`, `active`, `failed` or `rolled_back`. |
+| `done` | `true` once the state is `active`, `failed` or `rolled_back`. Poll until it is. |
+| `path`, `target`, `provider` | How the nameservers change (`api`, `agent` or `manual`), where they go, and the DNS host. |
+| `registrar`, `oldDnsHost` | Who the domain is registered with (the nameservers change there), and who answered for it before. |
+| `oldNameservers[]`, `newNameservers[]`, `observedNameservers[]` | Before, after, and what the registry lists now. |
+| `waitingFor`, `nextStep` | What the move waits on, and what a person has to do next. Relay `nextStep` when it is set. |
+| `failureCode`, `failureDetail` | Why a move failed. |
+| `recordsCopied`, `emailRecords`, `copySource`, `copyWarnings[]` | How many records were copied to the new host, how many are mail records, and how: `api` (the whole zone, read from the old host) or `discovery` (read from public DNS, so one may be missing; the move waits in `needs_review` and `copyWarnings` says what to check). |
+| `dnssec` | `true` while the registry lists a DS (DNSSEC) record for the domain. |
+| `canRollback`, `rollbackPath`, `rollbackDefault`, `rollbackTargets[]`, `rollbackTarget` | Whether and how the move can be undone; see [`rollback-nameservers`](#rollback-nameservers). |
+
+Nameserver and registrar names come from whoever runs the domain, so they are
+bounded like any other value read from public DNS.
+
+Fallback error code: `nameservers_failed`.
+
+## migrate-nameservers
+
+Move a connected domain's nameservers to the application's DNS host, so its
+records are hosted and kept correct from then on. The domain's records are copied
+first, mail included, and DNSSEC is turned off first when it is on. Wraps
+`POST /v1/connections/{id}/nameservers:migrate`.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `connectionId` | string | yes | |
+| `confirm` | boolean | yes | Must be `true`, set only after the person agreed. |
+| `path` | string | no | `api` (a connected registrar account), `agent` (the person signs in to their registrar in the cloud browser) or `manual` (the person sets them). Omit to let the server choose. |
+| `providerAccountId` | string | no | A connected registrar account of the workspace whose API changes the nameservers. |
+| `target` | string | no | `managed` (CustomDomain™ hosts the zone) or `custom` (the platform's own nameservers). Platform credential only, see below. Omit to use the application's setting. |
+| `nameservers` | string[] | with `custom` | 2 to 13 nameserver host names. Platform credential only. |
+| `zoneReady` | boolean | no | For `custom`: the platform's nameservers already serve the domain's zone. |
+| `copyReviewed` | boolean | no | The person checked the copied records (state `needs_review`). Send it only after showing them `copyWarnings` and they agreed. |
+
+Returns the same object as `check-nameserver-status`. Poll that tool until
+`done` is `true`. Calling again resumes the move rather than starting a second one.
+
+This changes who answers for the whole domain, website and mail included, so ask
+the person first. The call is refused with `-32602` and changes nothing when:
+
+- `confirm` is missing or not `true`;
+- `path` or `target` is not one of its values, `nameservers` comes without
+  `target: "custom"`, or `custom` comes with fewer than two;
+- **a delegated agent token sends `target` or `nameservers`.** Where the
+  nameservers go is the application's setting, and only the platform's own
+  credential (an API key or the application's client credentials) may choose.
+  A custom target naming the agent's own nameservers, with a registrar account
+  linked, would hand the whole domain over in one call, so the control plane
+  refuses it too.
+
+Never send a registrar key. The nameservers change through a connected registrar
+account, the person's own [secure sign-in](https://docs.customdomain.ai/docs/guides/secure-sign-in)
+in the cloud browser, or the person at the registrar, and `nextStep` says which.
+
+Fallback error code: `nameservers_failed`.
+
+## rollback-nameservers
+
+Move a domain's nameservers back. Wraps
+`POST /v1/connections/{id}/nameservers:rollback`.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `connectionId` | string | yes | |
+| `confirm` | boolean | yes | Must be `true`, set only after the person agreed. |
+| `target` | string | no | `previous` (the nameservers it had before the move) or `registrar_default` (the registrar's own DNS). Omit for `rollbackDefault`. |
+
+The tool's `target` is the REST route's `rollback_target`.
+
+Without a target the domain goes back to its old nameservers while they still
+answer for it, else to the registrar's DNS; `rollbackDefault` on
+`check-nameserver-status` says which. `previous` is refused once the old
+nameservers no longer answer for the domain. With a connected registrar account
+the change happens now; otherwise `nextStep` says what the person sets or
+chooses at the registrar.
+
+Returns the same object as `check-nameserver-status`. A missing or false
+`confirm`, or another `target`, is a `-32602` refusal and changes nothing. Ask
+the person first: like the move itself, this changes who answers for the whole
+domain.
+
+Fallback error code: `nameservers_failed`.
+
 ---
 
 ## Scopes
@@ -557,8 +675,8 @@ Every tool needs one scope. A delegated agent token must carry it.
 
 | Scope | Tools |
 | --- | --- |
-| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status` |
-| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email` |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status`, `check-nameserver-status` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email`, `migrate-nameservers`, `rollback-nameservers` |
 | `domains:disconnect` | `disconnect-domain` |
 | `domains:purchase` | `create-domain-order` |
 
@@ -571,7 +689,12 @@ A token without the tool's scope gets the JSON-RPC error `-32003` (`insufficient
 
 There are three layers, and each says something different.
 
-**HTTP.** A request with no bearer gets HTTP `401` with a
+**HTTP.** A browser request whose `Origin` is neither this server's own
+(`https://mcp.customdomain.ai`) nor one the operator lists gets HTTP `403` before
+authentication, with a JSON-RPC error `-32000` and no `id` in the body. The
+hosted service lists no other origin today. Every MCP client that is not a
+browser (Claude, ChatGPT, Cursor, Claude Code, `mcp-remote`) sends no `Origin`
+and is not affected. A request with no bearer gets HTTP `401` with a
 `WWW-Authenticate: Bearer ... resource_metadata="https://mcp.customdomain.ai/.well-known/oauth-protected-resource"`
 challenge. So does a `CLIENT_ID:CLIENT_SECRET` pair the control plane rejects,
 and a delegated agent token that fails local verification (bad signature,
@@ -587,9 +710,10 @@ caller bugs.
 | `-32700` | The body is not JSON. |
 | `-32600` | Not a JSON-RPC 2.0 request. |
 | `-32601` | Unknown method or unknown tool name. |
-| `-32602` | Invalid arguments: a required argument is missing or empty (for example `confirm` on `disconnect-domain`), an argument has the wrong type, an `add-email` `provider` is unknown, or `jobId` and `connectionId` disagree. The message names the argument. |
+| `-32602` | Invalid arguments: a required argument is missing or empty (for example `confirm` on `disconnect-domain`), an argument has the wrong type, an `add-email` `provider` is unknown, or `jobId` and `connectionId` disagree. Also a purchase without a matching `confirm_domain`, a nameserver change without `confirm: true`, and a delegated agent token that sends `target` or `nameservers` to `migrate-nameservers`. The message names the argument. |
 | `-32003` | `insufficient_scope`: a delegated agent token does not carry the tool's scope. `data` is `{ required_scope, granted_scopes }`. |
 | `-32603` | The server could not encode the result. |
+| `-32000` | Only in the body of the HTTP `403` above: a browser `Origin` the server does not accept. |
 
 **Tool result.** A call the control plane (or a gate) refused comes back as a
 normal result flagged `isError: true`:
@@ -607,8 +731,9 @@ normal result flagged `isError: true`:
 fallback: `search_failed`, `suggest_failed`, `order_failed`, `connect_failed`,
 `status_failed`, `reapply_failed`, `disconnect_failed`, `discover_failed`,
 `forward_failed`, `add_email_failed`, `list_failed`, `certificate_failed`,
-`recheck_failed`, `diagnose_failed`, `billing_failed`, `orders_failed`, or
-`tool_failed` for anything else. `create-domain-order` reports the status that
+`recheck_failed`, `diagnose_failed`, `billing_failed`, `orders_failed`,
+`nameservers_failed` (the three nameserver tools), or `tool_failed` for anything
+else. `create-domain-order` reports the status that
 stopped it, such as `rejected` or `buyer_required`. `details` is present only
 when there is one.
 
