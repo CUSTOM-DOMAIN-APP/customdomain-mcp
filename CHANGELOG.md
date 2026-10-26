@@ -11,6 +11,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### The server
+
+- `discover-provider` returns three more things from the domain check, which a hosted server of the next
+  product release sends: `rails.secureSignIn` (the secure sign-in rail, with `key: { rights, endsInDays }` when
+  the sign-in also makes an API key), `rails.dnsHosting` (the application's DNS hosting offer: `offered`,
+  `offered_first`, `recommended` or `unavailable`) and `alsoProvider` (a former Google Domains name now at
+  Squarespace, whose nameservers are Google Cloud DNS's). `recommendedRail` can now be `cloud_browser`, and
+  does lead a pasted API key wherever the secure sign-in makes the key itself. No tool was added or removed.
+- `discover-provider` also returns `rails.savedAccess` (`{ available, accounts, use }`) when the workspace already
+  keeps a provider key that may act for the domain, and `recommendedRail` is then `saved_access`, ahead of every
+  other way. No tool uses a kept key: `use` says to point the person at the domain's page in the console.
+
 ## [0.6.0] (2026-10-20)
 
 Three nameserver tools, twenty in all, and a purchase that names its domain twice. The server reports 0.6.0
