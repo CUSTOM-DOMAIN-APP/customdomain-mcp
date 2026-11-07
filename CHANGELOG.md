@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### This repository
+
+- `server.json`'s description no longer says "register": purchases are off on the hosted service. The
+  registry entry follows with the next published version.
+
 ### The server
 
 - `discover-provider` returns three more things from the domain check, which a hosted server of the next
