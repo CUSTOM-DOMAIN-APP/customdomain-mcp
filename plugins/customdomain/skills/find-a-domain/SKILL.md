@@ -18,8 +18,10 @@ Use the `customdomain` MCP server.
 Buying spends money and cannot be undone here.
 
 - Ask the person to confirm the exact domain and price first. Only after they say yes, call `create-domain-order` with `domain` and `confirm_domain` set to the same name they confirmed. Never fill `confirm_domain` on your own initiative, and never call it twice for one purchase.
-- Never supply a buyer or contact details yourself.
-- On the hosted service purchases through MCP are currently switched off, and a confirmed call answers `status: "rejected"`. When that happens, send the person to buy in the console at https://app.customdomain.ai (guide: https://docs.customdomain.ai/docs/sell/buying-a-domain).
-- When an order does go through, follow it with `check-order-status` using its `orderId` or `jobId`, and list past orders with `list-domain-orders`.
+- Never supply a buyer or contact details yourself. The domain is registered to the account of the person who signed in.
+- The purchase counts against the monthly spend cap the person set when they granted `domains:purchase`. If they did not grant that scope, the call fails with `insufficient_scope`; tell them they can sign in again and grant it, or buy in the console.
+- A successful call returns an `orderId`, or a checkout `link` with a `jobId`. Relay a `link` for the person to open; never open or complete it yourself.
+- When `success` is `false` (for example `status: "rejected"` or `"buyer_required"`, or a spend cap reached), say what `error` and `message` report and do not retry. Offer the console at https://app.customdomain.ai instead (guide: https://docs.customdomain.ai/docs/sell/buying-a-domain).
+- Follow an order with `check-order-status` using its `orderId` or `jobId`, and list past orders with `list-domain-orders`.
 
 After a purchase completes, use the `connect-a-domain` skill to put it in front of the app.

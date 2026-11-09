@@ -22,6 +22,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `discover-provider` also returns `rails.savedAccess` (`{ available, accounts, use }`) when the workspace already
   keeps a provider key that may act for the domain, and `recommendedRail` is then `saved_access`, ahead of every
   other way. No tool uses a kept key: `use` says to point the person at the domain's page in the console.
+- A delegated agent token (a person's own sign-in) with `domains:purchase` no longer goes through the purchase
+  authorization callback. Its gates are `confirm_domain` and the grant itself, which needs a saved card and a
+  monthly spend cap above zero; the cap bounds every purchase. The registrant is the account of the person who
+  approved the grant. Other callers still need the callback's approval.
+
+### On the hosted service
+
+- Purchases are on for a person's own sign-in (2026-11-09). `create-domain-order`, `check-order-status` and
+  `list-domain-orders` are listed, and `domains:purchase` is advertised in the protected resource metadata and
+  the `401` scope hint. API keys still cannot buy, and client credentials still answer `rejected`.
+
+### The Claude Code plugin
+
+- 0.1.1: the `find-a-domain` skill no longer says purchases are off. It says how to relay an order (`orderId`,
+  or a checkout `link` with a `jobId`), that the spend cap bounds it, and what to do when `success` is `false`.
 
 ## [0.6.0] (2026-10-20)
 
