@@ -9,6 +9,9 @@
   },
   "homepage": "https://customdomain.ai/mcp-server",
   "privacyPolicyUrl": "https://customdomain.ai/privacy",
+  "termsOfServiceUrl": "https://customdomain.ai/terms",
+  "supportUrl": "https://customdomain.ai/contact",
+  "documentationUrl": "https://docs.customdomain.ai/docs/mcp/overview",
   "repository": "https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp",
   "license": "MIT",
   "keywords": [
