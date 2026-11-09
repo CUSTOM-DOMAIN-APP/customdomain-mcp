@@ -1,0 +1,19 @@
+{
+  "name": "customdomain",
+  "owner": {
+    "name": "CustomDomain.ai",
+    "url": "https://customdomain.ai"
+  },
+  "metadata": {
+    "description": "The CustomDomain™ plugin for Claude Code and Claude."
+  },
+  "plugins": [
+    {
+      "name": "customdomain",
+      "source": "./plugins/customdomain",
+      "description": "Search, register and connect custom domains with DNS and HTTPS handled for you.",
+      "category": "productivity",
+      "homepage": "https://customdomain.ai/mcp-server"
+    }
+  ]
+}

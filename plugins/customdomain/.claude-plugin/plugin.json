@@ -1,0 +1,27 @@
+{
+  "name": "customdomain",
+  "displayName": "CustomDomain™",
+  "version": "0.1.0",
+  "description": "Search, register and connect custom domains with DNS and HTTPS handled for you. Adds the CustomDomain™ MCP server plus skills for connecting a domain, finding one, fixing a broken connection, and setting up email or redirects.",
+  "author": {
+    "name": "CustomDomain.ai",
+    "url": "https://customdomain.ai"
+  },
+  "homepage": "https://customdomain.ai/mcp-server",
+  "privacyPolicyUrl": "https://customdomain.ai/privacy",
+  "termsOfServiceUrl": "https://customdomain.ai/terms",
+  "supportUrl": "https://customdomain.ai/contact",
+  "documentationUrl": "https://docs.customdomain.ai/docs/mcp/overview",
+  "repository": "https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp",
+  "license": "MIT",
+  "keywords": [
+    "domains",
+    "dns",
+    "https",
+    "custom-domain",
+    "ssl",
+    "domain-registration",
+    "mcp"
+  ],
+  "icon": ".claude-plugin/icon.png"
+}
