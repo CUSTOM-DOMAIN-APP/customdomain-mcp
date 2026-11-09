@@ -129,8 +129,7 @@ was found).
 
 ## create-domain-order
 
-Start a registration through the resolved registrar. **This spends money, and it
-is off on the hosted service today.**
+Start a registration through the resolved registrar. **This spends money.**
 
 | Argument | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -154,26 +153,30 @@ The order goes through these steps, and stops at the first that refuses:
    confirmed") and orders nothing. Ask the person, then send the domain they
    confirmed.
 1. **Registrar resolution.** No usable rail answers `status: "error"`.
-2. **The purchase authorization callback.** The MCP server calls the integrator's
-   callback before any paid order. If no callback is configured, every purchase
-   is denied with `status: "rejected"`. Any answer other than an approval also
-   answers `rejected` (see the callback contract in the
-   [MCP docs](https://docs.customdomain.ai/docs/mcp/overview)).
-3. **A registrant contact.** An approval that carries no `buyer.email` answers
-   `status: "buyer_required"`. The agent never supplies a buyer.
+2. **The purchase authorization callback**, for callers that are not a
+   person's own sign-in. The MCP server calls the integrator's callback before
+   any paid order. If no callback is configured, every such purchase is denied
+   with `status: "rejected"`. Any answer other than an approval also answers
+   `rejected` (see the callback contract in the
+   [MCP docs](https://docs.customdomain.ai/docs/mcp/overview)). A delegated
+   agent token skips this step: the person already approved `domains:purchase`
+   on the consent page, which needs a saved card and a monthly spend cap above
+   zero, and that cap bounds every purchase made with the grant.
+3. **A registrant contact.** A callback approval that carries no `buyer.email`
+   answers `status: "buyer_required"`. For a delegated agent token the
+   registrant is the account of the person who approved the grant. The agent
+   never supplies a buyer.
 4. **The control plane's purchase route**, with an idempotency key derived from
    the domain and the buyer email, so a retried call cannot register twice. That
-   route has its own switch and refuses API keys.
+   route has its own switch, refuses API keys, and refuses a purchase that would
+   pass the grant's spend cap.
 
-On the hosted service no purchase authorization callback is configured, so a
-confirmed call answers at step 2:
-
-```json
-{ "success": false, "domain": "example.com", "status": "rejected", "error": "rejected",
-  "message": "purchase authorization is not configured; refusing to place a paid order (fail-closed default)" }
-```
-
-Buy a domain in the console instead. See
+On the hosted service purchases are on for a person's own sign-in (an MCP
+client such as Claude, with `domains:purchase` granted). A confirmed call places
+the order and returns an `orderId`, or a checkout `link` with a `jobId`; follow
+it with `check-order-status`. When a step refuses, `success` is `false` and
+`error` and `message` say why. The person can always buy in the console
+instead; see
 [Buying a domain](https://docs.customdomain.ai/docs/sell/buying-a-domain).
 
 ## connect-domain

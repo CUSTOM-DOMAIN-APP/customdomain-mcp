@@ -83,8 +83,8 @@ you have to assemble:
 
 - **Check whether a domain can be registered**, with live purchase and renewal pricing: `search-domain-availability`
 - **Suggest names that are actually free**, deterministically, from a set of keywords: `generate-domain-suggestions`
-- **Register a domain** through the resolved registrar, behind a fail-closed authorization gate. Currently off
-  on the hosted service: `create-domain-order`
+- **Register a domain** through the resolved registrar, only after the person confirms the exact domain, and
+  within the spend cap they set when granting purchase: `create-domain-order`
 - **Connect a domain the customer already owns** and get back the exact records that must exist: `connect-domain`
 - **Detect the DNS provider before you ask anyone for anything**, with per-rail verdicts and conflict and CAA
   pre-flight: `discover-provider`
@@ -143,9 +143,10 @@ what to add, and the completion signal is a boolean rather than a status string 
   the person, calls `migrate-nameservers` with `confirm: true`, and polls `check-nameserver-status` until `done`,
   relaying `nextStep` whenever the person has to act at their registrar. `rollback-nameservers` undoes it.
 
-Buying a domain through MCP is built but not available on the hosted service: purchases are
-authorization-gated, and no purchase authorization callback is configured there, so `create-domain-order`
-answers `rejected`. Buy in the console, then connect the domain here.
+- **Buying the name, then connecting it.** `generate-domain-suggestions` or `search-domain-availability` for
+  the price, the person confirms the exact domain, `create-domain-order` with that domain in `confirm_domain`,
+  `check-order-status` until it completes, then `connect-domain`. On the hosted service this works for a
+  person's own sign-in with `domains:purchase` granted; the grant's monthly spend cap bounds every purchase.
 
 ## Why an MCP server and not a REST API
 
@@ -155,8 +156,10 @@ from a vetted template, so the worst thing a prompt-injected agent can do here i
 not write an arbitrary `MX` record into a customer's zone. The security model is the argument list. On top of
 it, a delegated agent token carries only the scopes a person approved, and removing a domain is its own scope
 and needs the domain named back in `confirm`. Paid registration is gated separately: `create-domain-order`
-needs the domain repeated in `confirm_domain`, and places an order only after the integrator's
-purchase-authorization callback approves it; an unconfigured callback denies every purchase. A nameserver move
+needs the domain repeated in `confirm_domain`. A person's own sign-in may buy only after they granted
+`domains:purchase` with a saved card and a monthly spend cap, which bounds every order; any other caller places
+an order only after the integrator's purchase-authorization callback approves it, and an unconfigured callback
+denies those purchases. A nameserver move
 needs `confirm: true`, and an agent token cannot choose where the nameservers go: the application's setting
 decides.
 
@@ -524,7 +527,7 @@ repository.
 | `MCP_TENANT_RPS` | no | `5` | Tool calls per second per caller. `0` turns the limit off. |
 | `MCP_TENANT_BURST` | no | `20` | Tool calls per caller in one burst |
 | `MCP_LINK_BASE` | no | console URL | Prefix for the guided-DNS fallback links returned to agents |
-| `MCP_PURCHASE_AUTHZ_URL` | for purchases | unset | Authorization callback. **Unset denies every paid order**, which is how the hosted service runs today. |
+| `MCP_PURCHASE_AUTHZ_URL` | for purchases | unset | Authorization callback for callers that are not a person's own sign-in. **Unset denies their paid orders**, which is how the hosted service runs today. A delegated agent token skips it and is bounded by its grant's spend cap. |
 | `MCP_PURCHASE_AUTHZ_USER` | with the URL | unset | Basic-auth user for that callback |
 | `MCP_PURCHASE_AUTHZ_PASSWORD` | with the URL | unset | Basic-auth password for that callback (injected, never stored) |
 | `MCP_PREFERRED_REGISTRAR` | no | unset | Registrar tried first during order resolution |
@@ -597,7 +600,8 @@ upstream appears with no change on your side, and rollback is a redeploy of the 
 action at all. Pin your integration to tool names and to the `connected` boolean, not to a version string.
 
 Operational levers, in the order you would reach for them: revoke the key or the agent's grant in the console
-to cut off a misbehaving agent; lower `MCP_TENANT_RPS`; unset `MCP_PURCHASE_AUTHZ_URL` to deny all purchases;
+to cut off a misbehaving agent, or lower its spend cap; lower `MCP_TENANT_RPS`; turn off the control plane's
+purchase switch to stop every purchase;
 watch error reporting for the service and the control plane. Tool-affecting changes are recorded in the
 [docs changelog](https://docs.customdomain.ai/docs/changelog).
 
@@ -608,8 +612,10 @@ watch error reporting for the service and the control plane. Tool-affecting chan
   in. The breakdown is published at [Providers](https://docs.customdomain.ai/docs/providers).
 - **An agent cannot finish a manual connection alone.** The design is link-mediated on purpose: the agent
   returns a link and polls; a human does the money step and, where there is no automatic rail, the DNS step.
-- **Purchases are off on the hosted service.** `create-domain-order` is authorization-gated and no purchase
-  authorization callback is configured there, so it answers `rejected`. Buy in the console.
+- **Purchases need a person's own sign-in.** On the hosted service `create-domain-order` works for a delegated
+  agent token with `domains:purchase`, bounded by the grant's monthly spend cap. An API key cannot buy, and an
+  application's client credentials answer `rejected` because no purchase authorization callback is configured
+  there. Buy in the console in those cases.
 - **`confirm` is compared with the domain only for agent tokens.** `disconnect-domain` requires `confirm` from
   every caller, but today the control plane checks that it names the connection's domain only for a delegated
   agent token. With an API key or a client credentials token, check it yourself before you call.
