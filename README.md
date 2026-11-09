@@ -176,7 +176,15 @@ may do, and the agent gets a scoped token. Clients that cannot sign in use an AP
 `cd_test_...` (older `sk_live_` / `sk_test_` keys keep working). Keep a key in an environment variable, never in
 a file you commit.
 
-**Claude Code**, sign in with OAuth:
+**Claude Code plugin**, the server plus skills that teach Claude the safe order of calls (connect a domain, find
+one, fix a stuck connection, email and redirects). See [plugins/customdomain](plugins/customdomain):
+
+```
+/plugin marketplace add CUSTOM-DOMAIN-APP/customdomain-mcp
+/plugin install customdomain@customdomain
+```
+
+**Claude Code**, the server only, sign in with OAuth:
 
 ```bash
 claude mcp add --transport http customdomain https://mcp.customdomain.ai/mcp
