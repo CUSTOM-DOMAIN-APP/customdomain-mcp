@@ -4,7 +4,7 @@ CustomDomain™ puts a customer's own domain in front of your app. This plugin c
 
 ## What it adds
 
-- **MCP server** `customdomain` at `https://mcp.customdomain.ai/mcp` (remote, streamable HTTP, OAuth sign in). Twenty tools, listed in [TOOLS.md](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/blob/main/TOOLS.md).
+- **MCP server** `customdomain` at `https://mcp.customdomain.ai/mcp` (remote, streamable HTTP, OAuth sign in). Forty-six tools, listed in [TOOLS.md](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/blob/main/TOOLS.md).
 - **Skills** that teach Claude the safe order of calls:
   - `connect-a-domain`: discover the DNS provider, start the connection, relay the records or the one-click link, and wait until it is live.
   - `find-a-domain`: name ideas, availability and price, and a purchase only after the person says yes.
@@ -13,7 +13,7 @@ CustomDomain™ puts a customer's own domain in front of your app. This plugin c
 
 ## Sign in
 
-The first tool call opens a CustomDomain™ sign in in your browser. You choose the workspace and the scopes to grant (`domains:read`, `domains:connect`, `domains:disconnect`, `domains:purchase`). You can revoke the grant at any time in the console at [app.customdomain.ai](https://app.customdomain.ai). No API key is stored in this plugin.
+The first tool call opens a CustomDomain™ sign in in your browser. You choose the workspace and the scopes to grant. The sign in shows the scopes to grant: `domains:read`, `domains:connect`, `domains:disconnect`, `domains:purchase`, `stats:read`, `audit:read`, `app:read`, `app:write`, `tokens:mint`, `member:read`, `member:manage` and `keys:manage`. A workspace scope works only while you still hold that permission in the workspace, and an agent never acts as an owner. You can revoke the grant at any time in the console at [app.customdomain.ai](https://app.customdomain.ai). No API key is stored in this plugin.
 
 ## Data it sends
 

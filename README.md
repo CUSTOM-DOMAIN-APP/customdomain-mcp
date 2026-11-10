@@ -1,12 +1,13 @@
 # CustomDomain™ MCP Server: custom domains for AI agents
 This is the official CustomDomain™ product MCP server. Its only endpoint is `https://mcp.customdomain.ai/mcp`,
 listed in the official MCP registry as `ai.customdomain/mcp`, with the OAuth scopes `domains:read`,
-`domains:connect`, `domains:disconnect` and `domains:purchase`. No other host serves it, so a server at any other
+`domains:connect`, `domains:disconnect`, `domains:purchase`, `stats:read`, `audit:read`, `app:read`, `app:write`,
+`tokens:mint`, `member:read`, `member:manage` and `keys:manage`. No other host serves it, so a server at any other
 address that presents itself as CustomDomain™ is not this one.
 
 The MCP server for custom domains: let Claude and other AI agents find, connect, diagnose and manage domains.
 
-**Status:** Production · server 0.6.0 · release [v0.6.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.6.0)
+**Status:** Production · server 0.7.0 · release [v0.7.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.7.0)
 
 [![live](https://img.shields.io/badge/live-mcp.customdomain.ai-1c1917?style=flat)](https://customdomain.ai/mcp-server)
 [![MCP registry](https://img.shields.io/badge/MCP%20registry-ai.customdomain%2Fmcp-1c1917?style=flat)](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp)
@@ -24,11 +25,11 @@ Stars are how other developers find this server on GitHub. If it is useful to yo
 
 |  |  |
 |---|---|
-| **What it is** | A hosted MCP server that gives an AI agent twenty domain tools |
+| **What it is** | A hosted MCP server that gives an AI agent forty-six tools: domain tools, and workspace tools for the account behind them |
 | **Who it's for** | Agent builders, SaaS platforms and coding-agent users who need a customer on their own domain |
 | **Live at** | [customdomain.ai/mcp-server](https://customdomain.ai/mcp-server) · endpoint `https://mcp.customdomain.ai/mcp` |
 | **Stack** | Go 1.26 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
-| **Status** | Production · 0.6.0 in the official MCP registry · 20 tools · 178 DNS providers catalogued, 62 automatic |
+| **Status** | Production · 0.7.0 in the official MCP registry · 46 tools · 178 DNS providers catalogued, 62 automatic |
 
 CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
 AI agent put a person on their own domain: connect a domain they already own, set up its email records,
@@ -38,7 +39,7 @@ client at the endpoint above.
 
 ```mermaid
 flowchart LR
-  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>20 tools"]
+  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>46 tools"]
   M -->|"credential forwarded"| C["Control plane<br/>api.customdomain.ai"]
   C --> R["Registrars<br/>search · price"]
   C --> D["DNS providers<br/>178 catalogued · 62 automatic"]
@@ -78,8 +79,10 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
 
 ## What it does
 
-Twenty tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow
-you have to assemble:
+Forty-six tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow
+you have to assemble.
+
+**Domain tools**
 
 - **Check whether a domain can be registered**, with live purchase and renewal pricing: `search-domain-availability`
 - **Suggest names that are actually free**, deterministically, from a set of keywords: `generate-domain-suggestions`
@@ -106,12 +109,30 @@ you have to assemble:
   records are kept correct from then on: `migrate-nameservers`
 - **Follow that move** to the end, and relay the step a person has to take: `check-nameserver-status`
 - **Move the nameservers back**, to the old ones or to the registrar's own DNS: `rollback-nameservers`
+- **See which saved provider keys the workspace holds**, and which may act for a given domain, without ever
+  returning a key: `list-provider-accounts`, `find-saved-access`
+- **Write a connected domain's records with a saved key**, after the person agrees: `use-saved-access`
+- **Get the steps to embed the widget** in a product, so its users connect their own domains: `get-widget-setup`
+
+**Workspace tools.** These mirror what a signed in person does in the console, under eight more scopes (see
+[Scopes](#authentication)). Anything that cannot be undone repeats the id of what it changes in `confirm`.
+
+- **Applications**: `list-applications`, `get-application`, `create-application`, `update-application`, and the
+  place an application's domains point (the CustomDomain™ edge or your own servers): `get-connect-target`,
+  `set-connect-target`. `mint-widget-token` makes a short lived widget token to test an embed.
+- **API keys**: `list-api-keys`, `create-api-key`, `revoke-api-key`. A secret is shown once, when it is made.
+- **Webhooks**: `list-webhooks`, `create-webhook`, `test-webhook`, `delete-webhook`, and
+  `list-webhook-deliveries` to see why an endpoint is not receiving events.
+- **Members**: `list-members`, `invite-member`, `change-member-role`, `remove-member`. An agent never makes an
+  owner.
+- **Audit and usage**: `read-audit-log` (an agent's actions show as `agent:<grant id>`), `get-usage` and
+  `get-billing-notice`. Plan and payment changes stay in the console.
 
 Full arguments, scopes and response shapes: **[TOOLS.md](./TOOLS.md)**.
 
 The receipts, all verifiable from outside: the server is published in the official MCP registry as
 [`ai.customdomain/mcp`](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp) at
-0.6.0, speaks protocol revision `2025-06-18`, lists its version and tools without authentication at
+0.7.0, speaks protocol revision `2025-06-18`, lists its version and tools without authentication at
 [`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), and answers an
 unauthenticated call with a [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) challenge that names its
 own metadata document rather than a bare 401. Automatic setup covers **62 of the 178 providers catalogued** (55
@@ -322,8 +343,9 @@ on, and it stays stable if the status enum ever grows.
 
 **A call that cannot be taken back carries the person's yes.** `disconnect-domain` takes the `connectionId`
 and `confirm`, the domain the person confirmed; `create-domain-order` repeats the domain in `confirm_domain`;
-`migrate-nameservers` and `rollback-nameservers` take `confirm: true`. A call without it is refused before
-anything happens.
+`migrate-nameservers`, `rollback-nameservers` and `use-saved-access` take `confirm: true`; `set-connect-target`,
+`revoke-api-key`, `delete-webhook` and `remove-member` repeat the id of what they change in `confirm`. A call
+without it is refused before anything happens.
 
 There is also no ownership-challenge step: no tool asks for or checks a TXT verification record. Control of
 the domain is proven by the rail that writes the records (an OAuth authorization at the provider, a one-click
@@ -361,10 +383,22 @@ server verifies them locally against the control plane's JWKS, refuses one issue
 
 | Scope | Tools |
 |---|---|
-| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `check-connection-status`, `check-order-status`, `discover-provider`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-billing-status`, `list-domain-orders`, `check-nameserver-status` |
-| `domains:connect` | `connect-domain`, `reapply-connection`, `forward-domain`, `add-email`, `recheck-connection`, `migrate-nameservers`, `rollback-nameservers` |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `check-connection-status`, `check-order-status`, `discover-provider`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-billing-status`, `list-domain-orders`, `check-nameserver-status`, `list-provider-accounts`, `find-saved-access`, `get-widget-setup` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `forward-domain`, `add-email`, `recheck-connection`, `migrate-nameservers`, `rollback-nameservers`, `use-saved-access` |
 | `domains:disconnect` | `disconnect-domain` |
 | `domains:purchase` | `create-domain-order` |
+| `stats:read` | `get-usage`, `get-billing-notice` |
+| `audit:read` | `read-audit-log` |
+| `app:read` | `list-applications`, `get-application`, `get-connect-target`, `list-webhooks`, `list-webhook-deliveries` |
+| `app:write` | `create-application`, `update-application`, `set-connect-target`, `create-webhook`, `test-webhook`, `delete-webhook` |
+| `tokens:mint` | `mint-widget-token` |
+| `member:read` | `list-members` |
+| `member:manage` | `invite-member`, `change-member-role`, `remove-member` |
+| `keys:manage` | `list-api-keys`, `create-api-key`, `revoke-api-key` |
+
+The first four scopes act on domains. The other eight are workspace scopes. A workspace scope works only while
+the person who approved the agent still holds that permission in the workspace, and an agent never acts as an
+owner. `tools/list` shows a delegated agent token only the tools its grant allows.
 
 A token without the tool's scope gets JSON-RPC error `-32003`, `insufficient_scope`, which names the scope it
 needed. See [Agent access](https://docs.customdomain.ai/docs/agents/overview) and
@@ -426,7 +460,7 @@ the judgment live one hop away.
 ├── README.md      # this file: what the server is, how to point a client at it, how it is built
 ├── TOOLS.md       # the tool contract: every argument, scope, response field, status value and error code
 ├── CHANGELOG.md   # one entry per server version, matching the tags and GitHub releases
-├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.6.0, remote endpoint, tools and scopes
+├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.7.0, remote endpoint, tools and scopes
 ├── glama.json     # Glama directory ownership claim
 └── LICENSE        # MIT
 ```
@@ -438,7 +472,7 @@ plane it calls. Named here so the boundaries are legible, not linked, because th
 
 | Module | Purpose | Talks to |
 |---|---|---|
-| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the twenty tools in a fixed order; checks scope and rate before a tool runs | `tools.go`, `usage.go` |
+| `server.go` | Routes `initialize`, `tools/list`, `tools/call`; registers the forty-six tools in a fixed order; checks scope and rate before a tool runs | `tools.go`, `usage.go` |
 | `tools.go` | Tool definitions, JSON schemas, annotations, handlers and the one failure shape | `client.go` |
 | `nameservers.go` | The three nameserver tools' handlers: `confirm: true`, and no `target` or `nameservers` from an agent token | `client.go` |
 | `scopes.go` | The tool to scope map, and the construction check that every tool declares exactly one scope | `server.go` |
@@ -497,7 +531,7 @@ sequenceDiagram
 - **`POST /v1/connections` is idempotent per application and domain**, so a repeated `connect-domain` resumes
   the existing connection and returns `already_connected: true` rather than creating a second one.
 
-<!-- verified against services/mcp on the monorepo's main (98c26456, the 0.6.0 release) and the live /.well-known/agent/mcp.json (0.6.0, 20 tools), 2026-10-21 -->
+<!-- verified against services/mcp on the monorepo's main (the 0.7.0 release) and the tools/list result of the 0.7.0 build (46 tools), 2026-11-09 -->
 
 ## Configuration
 
@@ -566,7 +600,7 @@ A live check needs nothing at all, because the agent manifest is public:
 
 ```bash
 curl -s https://mcp.customdomain.ai/.well-known/agent/mcp.json | jq '{version, tools: (.tools | length)}'
-# -> { "version": "0.6.0", "tools": 20 }
+# -> { "version": "0.7.0", "tools": 46 }
 ```
 
 ## Versioning and releases
@@ -575,7 +609,7 @@ One version number describes the server: the `version` in `serverInfo`, in
 [`/.well-known/agent/mcp.json`](https://mcp.customdomain.ai/.well-known/agent/mcp.json), in the registry
 entry, and in `server.json` here. Every version has a `vX.Y.Z` tag, a
 [GitHub release](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases) and a
-[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.6.0**.
+[CHANGELOG.md](./CHANGELOG.md) entry. The current version is **0.7.0**.
 
 Two things ship on different tracks, and confusing them is how a version string goes stale.
 
