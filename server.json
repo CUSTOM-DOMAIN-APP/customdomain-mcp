@@ -3,7 +3,7 @@
   "name": "ai.customdomain/mcp",
   "title": "CustomDomain™",
   "description": "Custom domains for SaaS and AI agents: search, register, connect DNS, and issue HTTPS over MCP.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "websiteUrl": "https://customdomain.ai",
   "icons": [
     {
@@ -40,7 +40,20 @@
   ],
   "_meta": {
     "io.modelcontextprotocol.registry/publisher-provided": {
-      "scopes": ["domains:read", "domains:connect", "domains:disconnect", "domains:purchase"],
+      "scopes": [
+        "domains:read",
+        "domains:connect",
+        "domains:disconnect",
+        "domains:purchase",
+        "stats:read",
+        "audit:read",
+        "app:read",
+        "app:write",
+        "tokens:mint",
+        "member:read",
+        "member:manage",
+        "keys:manage"
+      ],
       "tools": [
         { "name": "search-domain-availability", "scope": "domains:read" },
         { "name": "generate-domain-suggestions", "scope": "domains:read" },
@@ -61,7 +74,33 @@
         { "name": "list-domain-orders", "scope": "domains:read" },
         { "name": "check-nameserver-status", "scope": "domains:read" },
         { "name": "migrate-nameservers", "scope": "domains:connect" },
-        { "name": "rollback-nameservers", "scope": "domains:connect" }
+        { "name": "rollback-nameservers", "scope": "domains:connect" },
+        { "name": "list-provider-accounts", "scope": "domains:read" },
+        { "name": "find-saved-access", "scope": "domains:read" },
+        { "name": "use-saved-access", "scope": "domains:connect" },
+        { "name": "get-widget-setup", "scope": "domains:read" },
+        { "name": "list-applications", "scope": "app:read" },
+        { "name": "get-application", "scope": "app:read" },
+        { "name": "create-application", "scope": "app:write" },
+        { "name": "update-application", "scope": "app:write" },
+        { "name": "get-connect-target", "scope": "app:read" },
+        { "name": "set-connect-target", "scope": "app:write" },
+        { "name": "mint-widget-token", "scope": "tokens:mint" },
+        { "name": "list-api-keys", "scope": "keys:manage" },
+        { "name": "create-api-key", "scope": "keys:manage" },
+        { "name": "revoke-api-key", "scope": "keys:manage" },
+        { "name": "list-webhooks", "scope": "app:read" },
+        { "name": "create-webhook", "scope": "app:write" },
+        { "name": "test-webhook", "scope": "app:write" },
+        { "name": "delete-webhook", "scope": "app:write" },
+        { "name": "list-webhook-deliveries", "scope": "app:read" },
+        { "name": "list-members", "scope": "member:read" },
+        { "name": "invite-member", "scope": "member:manage" },
+        { "name": "change-member-role", "scope": "member:manage" },
+        { "name": "remove-member", "scope": "member:manage" },
+        { "name": "read-audit-log", "scope": "audit:read" },
+        { "name": "get-usage", "scope": "stats:read" },
+        { "name": "get-billing-notice", "scope": "stats:read" }
       ]
     }
   }

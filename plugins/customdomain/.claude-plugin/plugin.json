@@ -1,7 +1,7 @@
 {
   "name": "customdomain",
   "displayName": "CustomDomain™",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Search, register and connect custom domains with DNS and HTTPS handled for you. Adds the CustomDomain™ MCP server plus skills for connecting a domain, finding one, fixing a broken connection, and setting up email or redirects.",
   "author": {
     "name": "CustomDomain.ai",

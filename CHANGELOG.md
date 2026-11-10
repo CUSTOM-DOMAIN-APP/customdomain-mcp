@@ -11,17 +11,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.7.0] (2026-11-09)
+
+Forty-six tools, up from twenty, and eight new scopes for running a workspace. The server reports 0.7.0.
+`tools/list` now shows a delegated agent token only the tools its grant allows. `server.json`, `TOOLS.md` and the
+README are updated to match.
+
 ### The server
 
-- `discover-provider` returns three more things from the domain check, which a hosted server of the next
-  product release sends: `rails.secureSignIn` (the secure sign-in rail, with `key: { rights, endsInDays }` when
+- Four domain tools after the twenty of 0.6.0:
+  - `list-provider-accounts` (scope `domains:read`) lists the provider accounts (saved keys at a DNS host or
+    registrar) the workspace has connected: the id, provider, label, how each was made, the domains it covers and
+    its status. It never returns a key.
+  - `find-saved-access` (scope `domains:read`) lists the saved keys that may write a connected domain's records,
+    best first, each marked `ready` or not.
+  - `use-saved-access` (scope `domains:connect`) writes a connected domain's records with a saved key and links
+    the key to the domain. It requires `confirm: true`.
+  - `get-widget-setup` (scope `domains:read`) returns what a developer needs to embed the CustomDomain™ widget
+    in their own product: the install command, the server step that mints a widget token, and the browser and
+    React snippets.
+- Twenty-two workspace tools, which mirror what a signed in person does in the console, under eight new scopes:
+  - Applications (`app:read`, `app:write`, `tokens:mint`): `list-applications`, `get-application`,
+    `create-application`, `update-application`, `get-connect-target`, `set-connect-target`, `mint-widget-token`.
+  - API keys (`keys:manage`): `list-api-keys`, `create-api-key`, `revoke-api-key`.
+  - Webhooks (`app:read`, `app:write`): `list-webhooks`, `create-webhook`, `test-webhook`, `delete-webhook`,
+    `list-webhook-deliveries`.
+  - Members (`member:read`, `member:manage`): `list-members`, `invite-member`, `change-member-role`,
+    `remove-member`.
+  - Audit and usage (`audit:read`, `stats:read`): `read-audit-log`, `get-usage`, `get-billing-notice`.
+- The eight new scopes are `stats:read`, `audit:read`, `app:read`, `app:write`, `tokens:mint`, `member:read`,
+  `member:manage` and `keys:manage`, twelve in all with the four `domains:` scopes. A workspace scope works only
+  while the person who approved the agent still holds that permission in the workspace, and an agent never acts
+  as an owner.
+- `set-connect-target`, `revoke-api-key`, `delete-webhook` and `remove-member` are destructive and take a
+  `confirm` that repeats the id of what they change. `create-application`, `create-api-key` and `create-webhook`
+  return a secret that is shown once.
+- `tools/list` shows a delegated agent token only the tools its grant allows.
+- `discover-provider` returns three more things from the domain check, which the hosted server sends:
+  `rails.secureSignIn` (the secure sign-in rail, with `key: { rights, endsInDays }` when
   the sign-in also makes an API key), `rails.dnsHosting` (the application's DNS hosting offer: `offered`,
   `offered_first`, `recommended` or `unavailable`) and `alsoProvider` (a former Google Domains name now at
   Squarespace, whose nameservers are Google Cloud DNS's). `recommendedRail` can now be `cloud_browser`, and
-  does lead a pasted API key wherever the secure sign-in makes the key itself. No tool was added or removed.
+  does lead a pasted API key wherever the secure sign-in makes the key itself.
 - `discover-provider` also returns `rails.savedAccess` (`{ available, accounts, use }`) when the workspace already
   keeps a provider key that may act for the domain, and `recommendedRail` is then `saved_access`, ahead of every
-  other way. No tool uses a kept key: `use` says to point the person at the domain's page in the console.
+  other way. `use-saved-access` writes the domain's records with such a key.
 - A delegated agent token (a person's own sign-in) with `domains:purchase` no longer goes through the purchase
   authorization callback. Its gates are `confirm_domain` and the grant itself, which needs a saved card and a
   monthly spend cap above zero; the cap bounds every purchase. The registrant is the account of the person who
@@ -35,8 +69,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### The Claude Code plugin
 
+- 0.1.2: the plugin README lists all forty-six tools and the twelve scopes the sign in can grant.
 - 0.1.1: the `find-a-domain` skill no longer says purchases are off. It says how to relay an order (`orderId`,
   or a checkout `link` with a `jobId`), that the spend cap bounds it, and what to do when `success` is `false`.
+
+### This repository
+
+- `server.json` is 0.7.0, with the forty-six tools and twelve scopes. `TOOLS.md` has a section for each new tool and
+  all twelve scopes. The README lists the new tools and scopes.
 
 ## [0.6.0] (2026-10-20)
 
@@ -211,6 +251,7 @@ there are no earlier entries.
 - The `server.json` description here is newer than the one the registry shows for 0.4.0. A registry version
   is immutable, so the new description reaches the registry with the next version.
 
+[0.7.0]: https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.7.0
 [0.6.0]: https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.6.0
 [0.5.0]: https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.5.0
 [0.4.0]: https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.4.0

@@ -1,6 +1,6 @@
 # Tool reference
 
-Every tool the CustomDomain™ MCP server advertises (server 0.6.0, protocol
+Every tool the CustomDomain™ MCP server advertises (server 0.7.0, protocol
 `2025-06-18`), with its arguments, the scope it needs and the shape of what
 comes back. The server is at `https://mcp.customdomain.ai/mcp` (streamable HTTP,
 JSON-RPC 2.0). See the [README](README.md) for client setup, credentials and
@@ -39,18 +39,22 @@ with `isError: true`, whichever tool made it. See [Errors](#errors).
 
 **A call that cannot be taken back carries the person's yes.**
 `create-domain-order` repeats the domain in `confirm_domain`,
-`disconnect-domain` names it in `confirm`, and `migrate-nameservers` and
-`rollback-nameservers` take `confirm: true`. Without it the call is refused at
-the JSON-RPC layer and nothing happens. Ask the person first; the server cannot
-tell whether you did.
+`disconnect-domain` names it in `confirm`, and `migrate-nameservers`,
+`rollback-nameservers` and `use-saved-access` take `confirm: true`. Without it
+the call is refused at the JSON-RPC layer and nothing happens. The workspace
+tools that cannot be undone (`set-connect-target`, `revoke-api-key`,
+`delete-webhook` and `remove-member`) take a `confirm` that repeats the id of
+the thing they change; anything else changes nothing. Ask the person first; the
+server cannot tell whether you did.
 
 ---
 
 ## The tools at a glance
 
-The server registers twenty tools, in this order. Each needs exactly one
-scope. A delegated agent token must carry it; an API key or a client credentials
-token holds no scopes, and the control plane authorizes each call it makes.
+The server registers forty-six tools, in this order. Each needs exactly one
+scope. A delegated agent token must carry it, and `tools/list` shows such a token
+only the tools its grant allows. An API key or a client credentials token holds
+no scopes, and the control plane authorizes each call it makes.
 
 | Tool | Scope | Hints |
 | --- | --- | --- |
@@ -74,15 +78,48 @@ token holds no scopes, and the control plane authorizes each call it makes.
 | [`check-nameserver-status`](#check-nameserver-status) | `domains:read` | read only |
 | [`migrate-nameservers`](#migrate-nameservers) | `domains:connect` | state changing, idempotent |
 | [`rollback-nameservers`](#rollback-nameservers) | `domains:connect` | **destructive** |
+| [`list-provider-accounts`](#list-provider-accounts) | `domains:read` | read only |
+| [`find-saved-access`](#find-saved-access) | `domains:read` | read only |
+| [`use-saved-access`](#use-saved-access) | `domains:connect` | state changing, idempotent |
+| [`get-widget-setup`](#get-widget-setup) | `domains:read` | read only, closed world |
+| [`list-applications`](#list-applications) | `app:read` | read only, closed world |
+| [`get-application`](#get-application) | `app:read` | read only, closed world |
+| [`create-application`](#create-application) | `app:write` | state changing, not idempotent, closed world |
+| [`update-application`](#update-application) | `app:write` | state changing, idempotent, closed world |
+| [`get-connect-target`](#get-connect-target) | `app:read` | read only, closed world |
+| [`set-connect-target`](#set-connect-target) | `app:write` | **destructive**, idempotent, closed world |
+| [`mint-widget-token`](#mint-widget-token) | `tokens:mint` | state changing, not idempotent, closed world |
+| [`list-api-keys`](#list-api-keys) | `keys:manage` | read only, closed world |
+| [`create-api-key`](#create-api-key) | `keys:manage` | state changing, not idempotent, closed world |
+| [`revoke-api-key`](#revoke-api-key) | `keys:manage` | **destructive**, idempotent, closed world |
+| [`list-webhooks`](#list-webhooks) | `app:read` | read only, closed world |
+| [`create-webhook`](#create-webhook) | `app:write` | state changing, not idempotent, closed world |
+| [`test-webhook`](#test-webhook) | `app:write` | state changing, not idempotent |
+| [`delete-webhook`](#delete-webhook) | `app:write` | **destructive**, idempotent, closed world |
+| [`list-webhook-deliveries`](#list-webhook-deliveries) | `app:read` | read only, closed world |
+| [`list-members`](#list-members) | `member:read` | read only, closed world |
+| [`invite-member`](#invite-member) | `member:manage` | state changing, not idempotent |
+| [`change-member-role`](#change-member-role) | `member:manage` | state changing, idempotent, closed world |
+| [`remove-member`](#remove-member) | `member:manage` | **destructive**, idempotent, closed world |
+| [`read-audit-log`](#read-audit-log) | `audit:read` | read only, closed world |
+| [`get-usage`](#get-usage) | `stats:read` | read only, closed world |
+| [`get-billing-notice`](#get-billing-notice) | `stats:read` | read only, closed world |
 
-The hints are the MCP tool annotations. The eleven read tools carry
-`readOnlyHint: true`. `disconnect-domain` and `rollback-nameservers` carry
-`destructiveHint: true`. `create-domain-order` carries `destructiveHint: true`
-and `idempotentHint: false`, because it spends money and every call is another
-purchase. The other state changing tools carry `destructiveHint: false` and
-`idempotentHint: true`. Every tool carries `openWorldHint: true` except
-`check-billing-status` and `list-domain-orders`, which read only CustomDomain™'s
-own records and never reach public DNS or a registrar.
+The hints are the MCP tool annotations. The twenty-four read tools carry
+`readOnlyHint: true`. Seven tools carry `destructiveHint: true`:
+`disconnect-domain`, `rollback-nameservers`, `set-connect-target`,
+`revoke-api-key`, `delete-webhook` and `remove-member` (all idempotent), and
+`create-domain-order`, which carries `idempotentHint: false` because it spends
+money and every call is another purchase. The tools that create something
+(`create-application`, `create-api-key`, `create-webhook`, `mint-widget-token`
+and `invite-member`) and `test-webhook` carry `idempotentHint: false`, since every
+call makes another one. The other state changing tools carry
+`destructiveHint: false` and `idempotentHint: true`. Twenty-three tools carry
+`openWorldHint: false`: `check-billing-status`, `list-domain-orders`,
+`get-widget-setup` and the workspace tools (except `test-webhook` and
+`invite-member`), which read or change only CustomDomain™'s own records and never
+reach public DNS, a registrar, a provider or a webhook endpoint. Every other tool
+carries `openWorldHint: true`.
 
 ---
 
@@ -671,21 +708,406 @@ domain.
 
 Fallback error code: `nameservers_failed`.
 
+## list-provider-accounts
+
+List the provider accounts the workspace has connected: saved keys at a DNS host
+or registrar. Scope `domains:read`. Read only.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `domain` | string | no | Keep the accounts that may act for this domain, best first. At most 3 of the keys may be read at their provider to check they reach the domain. |
+| `provider` | string | no | Keep one provider's accounts, by provider id, for example `godaddy`. |
+| `applicationId` | string | no | Only with `domain`: the application to ask for. An API key may name any application of its account; an agent token is bound to its own application and may only repeat it. |
+
+Returns each account's `accountId`, provider, label, how it was made (`api_key`
+or `secure_sign_in`), whether it is kept (continuous) or used once, the domains
+it covers, its status and the domains linked to it. The `accountId` is the id a
+saved account is referred to by (`providerAccountId`, `accountId`). With
+`domain`, `savedAccess` says for each account whether its access already holds
+the domain.
+
+Never returns a key. Keys your customers made at their own sign in are left out
+(`endUserKeys` counts them). A delegated agent token sees only the keys that
+serve its own application, with that application's connections and without the
+domains another application of the workspace has connected.
+
+## find-saved-access
+
+Find the saved keys that may write a connected domain's DNS records, best first.
+Scope `domains:read`. Read only.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `connectionId` | string | yes | The connection id. |
+| `provider` | string | no | Ask about another provider than the one detected for the domain, by provider id, for example `godaddy`. |
+
+Returns each key's `accountId`, provider, label and how it was made, plus
+`ready` (its access already holds the domain's zone) or not ready (a read with
+the key showed it reaches the zone, and using it adds the zone to its access).
+An empty list means none may act for this domain. Never returns a key, and never
+one a customer made at their own sign in. At most 3 keys are read at their
+provider to check they reach the domain.
+
+Pass a listed `accountId` to `use-saved-access` to write the domain's records
+with it.
+
+## use-saved-access
+
+Write a connected domain's DNS records with a saved key and link the key to the
+domain, so later repairs and the removal use it. Scope `domains:connect`. State
+changing, idempotent.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `connectionId` | string | yes | The connection id. |
+| `accountId` | string | yes | The saved key to write with: an `accountId` listed as able to act for this connection. |
+| `confirm` | boolean | yes | Must be `true`, which records that the person agreed to write this domain's records with this saved key. |
+
+This changes the domain's live DNS through the person's own account at their
+provider. The records are the ones the connection already holds; none are
+supplied by the caller. An `accountId` that was not listed as able to act for the
+same connection is refused (`saved_access_not_usable`). A key that is not ready
+adds the domain's zone to its access once the records are written.
+
+A write that fails links nothing and leaves the key's access as it was, but the
+provider may have changed some of the domain's records before it failed
+(`saved_access_write_failed`, with the provider's words). The connection's
+status afterward shows the outcome, so read it with `check-connection-status`.
+Ask the person first.
+
+## get-widget-setup
+
+Get what a developer needs to embed the CustomDomain™ widget (`customdomain-js`)
+in their own product, so their users connect their own domains. Scope
+`domains:read`. Read only, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | no | The public application ID to write into the snippets, for example `app_123`, as the console's Widget page shows it. Omit it to use the workspace's first application, or the docs' placeholder when the applications cannot be read. |
+
+Returns the npm package and install command, the server step that mints a
+short-lived widget token (endpoint, credential and a Node example that reads the
+API key from an environment variable), the browser snippet that opens the connect
+modal, the React variant, and the docs links. It changes nothing and never
+returns a key or secret.
+
+With `applicationId` that id is written into the snippets. Without it the tool
+reads the workspace's applications (this needs the `app:read` scope) and writes
+the first one's real id in. When they cannot be read, the snippets carry a
+placeholder and the application ID is on the Install tab of the console's Widget
+page.
+
+## list-applications
+
+List the workspace's applications. Scope `app:read`. Read only, closed world.
+Takes no arguments.
+
+Returns each application's id, name, environment, sandbox flag, connect target,
+DNS hosting setting and creation time. The application id is what the widget,
+widget tokens, API keys and webhooks are scoped to.
+
+## get-application
+
+Get one application of the workspace by id. Scope `app:read`. Read only, closed
+world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+
+Returns the application's name, environment, sandbox flag, connect target, DNS
+hosting setting, whether end users may save a provider key, and whether the
+secure sign in is available.
+
+## create-application
+
+Create an application in the workspace, the unit a product embeds the widget
+with. Scope `app:write`. State changing, not idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `name` | string | yes | The application's name, for example the product's name. |
+| `environment` | string | no | `production`, `staging` or `development`. |
+| `sandbox` | boolean | no | `true` makes a sandbox application that connects only test domains. |
+
+Returns the new application and its client secret. **The secret is shown this
+once.** It is used server side to mint widget tokens, so store it in the server's
+environment right away. Every call creates another application.
+
+## update-application
+
+Change an application's settings. Scope `app:write`. State changing, idempotent,
+closed world. Fields left out keep their value.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+| `name` | string | no | The new name. |
+| `dnsHostingMode` | string | no | `off`, `offer` (end users may move their nameservers to the DNS host) or `prefer` (the move is the suggested way). |
+| `dnsHostingTarget` | string | no | The DNS host nameservers move to, as the console's application settings name it. |
+| `endUserSavedAccess` | boolean | no | `true` lets end users save a provider key so later changes need no new sign in. |
+
+## get-connect-target
+
+Read where an application's connected domains point. Scope `app:read`. Read
+only, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+
+Returns the mode: the CustomDomain™ edge (`edge`) or the integrator's own servers
+(`custom`, with a CNAME target and apex IPv4 addresses), and how many existing
+domains a change would move.
+
+## set-connect-target
+
+Point an application's domains at the integrator's own servers, or back at the
+CustomDomain™ edge. Scope `app:write`. **Destructive**, idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+| `cnameTarget` | string | yes | The hostname domains point at, for example `edge.example.com`, or an empty string for the CustomDomain™ edge. |
+| `apexIpv4` | string[] | no | IPv4 addresses for root domains at DNS providers with no ALIAS style record. |
+| `confirm` | string | yes | Repeats the application's id the person confirmed; anything else changes nothing. |
+
+This re-points live domains, so traffic for every connected domain of the
+application can move. Read `get-connect-target` first for how many domains a
+change would move, and ask the person.
+
+## mint-widget-token
+
+Mint a short lived widget token (15 minutes) that opens the connect flow for one
+application, optionally bound to one hostname and one end user. Scope
+`tokens:mint`. State changing, not idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+| `domain` | string | no | Binds the token to this hostname. |
+| `endUserEmail` | string | no | The end user's email address, kept server side and never put in the token. |
+| `endUserRef` | string | no | The product's own id for the end user, up to 256 characters. |
+
+The token is in this result only. It is a bearer credential for the browser, so
+hand it only to the end user it is for. Useful to test an embed; a product mints
+its own on its server.
+
+## list-api-keys
+
+List an application's API keys. Scope `keys:manage`. Read only, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+
+Returns each key's id, name, prefix, environment, scopes, whether it is the
+default key, when it was last used, and whether it was revoked. The secret is
+never listed. It is read only, but it needs the key management scope because it
+names every key.
+
+## create-api-key
+
+Create an API key for an application. Scope `keys:manage`. State changing, not
+idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+| `environment` | string | no | The key's environment: `production`, `staging` or `development`. |
+
+Returns the key's secret. **It is shown this once**, so store it in the server's
+environment right away. A key an agent creates is named for the agent's grant and
+acts as a member: it embeds and connects domains, and cannot manage billing,
+members or keys.
+
+## revoke-api-key
+
+Revoke an API key. Scope `keys:manage`. **Destructive**, idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | yes | The application's id, for example `app_123`. |
+| `keyId` | string | yes | The key's id. |
+| `confirm` | string | yes | Repeats the key's id the person confirmed; anything else changes nothing. |
+
+Every request that uses the key fails from then on, so a server still holding it
+stops working. Ask the person first.
+
+## list-webhooks
+
+List the workspace's webhook endpoints. Scope `app:read`. Read only, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | no | Only this application's endpoints. |
+
+Returns each endpoint's id, application, URL, subscribed events and creation
+time. Signing secrets are never listed.
+
+## create-webhook
+
+Register a webhook endpoint for domain events on the credential's application.
+Scope `app:write`. State changing, not idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `url` | string | yes | The https URL that receives the events. |
+| `events` | string[] | no | Event types to send, for example `domain.connected`. Empty or omitted means all. |
+
+Returns the signing secret. **It is shown this once**, so store it where the
+endpoint verifies signatures.
+
+## test-webhook
+
+Send a signed test event to a webhook endpoint now and report the delivery.
+Scope `app:write`. State changing, not idempotent.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `webhookId` | string | yes | The webhook endpoint's id. |
+
+Returns the HTTP status the endpoint answered, whether it counted as delivered,
+and any error.
+
+## delete-webhook
+
+Delete a webhook endpoint; it receives no more events. Scope `app:write`.
+**Destructive**, idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `webhookId` | string | yes | The webhook endpoint's id. |
+| `confirm` | string | yes | Repeats the webhook endpoint's id the person confirmed; anything else changes nothing. |
+
+## list-webhook-deliveries
+
+List recent webhook delivery attempts, newest first. Scope `app:read`. Read only,
+closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `applicationId` | string | no | Only this application's deliveries. |
+| `eventType` | string | no | Only this event type, for example `domain.connected`. |
+
+Returns each attempt's event type, domain, endpoint URL, attempts, the status
+code the endpoint answered, whether it was delivered and the error. Useful to
+see why an endpoint is not receiving events.
+
+## list-members
+
+List the workspace's members and open invitations. Scope `member:read`. Read
+only, closed world. Takes no arguments.
+
+Returns each entry's id, email, role (`owner`, `admin`, `member` or `viewer`),
+status (`active`, `pending` or `expired`), who invited them and when an
+invitation expires.
+
+## invite-member
+
+Invite a person to the workspace by email. Scope `member:manage`. State
+changing, not idempotent.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `email` | string | yes | The person's email address. |
+| `role` | string | yes | `admin`, `member` or `viewer`. |
+
+CustomDomain™ emails them an invitation that expires. An owner is made by a
+person in the console, never by an agent.
+
+## change-member-role
+
+Change a member's role. Scope `member:manage`. State changing, idempotent,
+closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `memberId` | string | yes | The member's id. |
+| `role` | string | yes | `admin`, `member` or `viewer`. |
+
+An owner's role, and making an owner, stay with a person in the console.
+
+## remove-member
+
+Remove a member from the workspace, or withdraw an open invitation. Scope
+`member:manage`. **Destructive**, idempotent, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `memberId` | string | yes | The member's id. |
+| `confirm` | string | yes | Repeats the member's id the person confirmed; anything else changes nothing. |
+
+The person loses access to the console at once. Ask the person first.
+
+## read-audit-log
+
+Read the workspace's audit log, newest first. Scope `audit:read`. Read only,
+closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `action` | string | no | An action, or an action prefix ending in a dot, for example `apikey.` or `member.invited.` |
+| `limit` | integer | no | How many events, 1 to 200 (default 50). |
+
+Returns who did what to which target and when. An agent's actions show as
+`agent:<grant id>`. Filter by action, or by an action prefix such as `member.`
+to see one area.
+
+## get-usage
+
+Read the workspace's plan usage for a billing period. Scope `stats:read`. Read
+only, closed world.
+
+| Argument | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `period` | string | no | The period as `YYYY-MM`; the current period by default. |
+
+Returns the plan, the domains used against the quota, what remains, whether the
+quota is enforced and the billing state.
+
+## get-billing-notice
+
+Read the workspace's billing standing as the console shows it. Scope
+`stats:read`. Read only, closed world. Takes no arguments.
+
+Returns the plan, trial or grace days left, whether payment failed or setup is
+required, and whether the caller may manage billing. Plan, checkout and payment
+changes are made by a person on the console's billing page, whose link is in the
+result.
+
 ---
 
 ## Scopes
 
-Every tool needs one scope. A delegated agent token must carry it.
+Every tool needs one scope. A delegated agent token must carry it, and `tools/list`
+shows a token only the tools its grant allows. The twelve scopes, in the order the
+sign in lists them:
 
 | Scope | Tools |
 | --- | --- |
-| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status`, `check-nameserver-status` |
-| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email`, `migrate-nameservers`, `rollback-nameservers` |
+| `domains:read` | `search-domain-availability`, `generate-domain-suggestions`, `discover-provider`, `check-connection-status`, `list-connections`, `check-certificate-status`, `diagnose-connection`, `check-order-status`, `list-domain-orders`, `check-billing-status`, `check-nameserver-status`, `list-provider-accounts`, `find-saved-access`, `get-widget-setup` |
+| `domains:connect` | `connect-domain`, `reapply-connection`, `recheck-connection`, `forward-domain`, `add-email`, `migrate-nameservers`, `rollback-nameservers`, `use-saved-access` |
 | `domains:disconnect` | `disconnect-domain` |
 | `domains:purchase` | `create-domain-order` |
+| `stats:read` | `get-usage`, `get-billing-notice` |
+| `audit:read` | `read-audit-log` |
+| `app:read` | `list-applications`, `get-application`, `get-connect-target`, `list-webhooks`, `list-webhook-deliveries` |
+| `app:write` | `create-application`, `update-application`, `set-connect-target`, `create-webhook`, `test-webhook`, `delete-webhook` |
+| `tokens:mint` | `mint-widget-token` |
+| `member:read` | `list-members` |
+| `member:manage` | `invite-member`, `change-member-role`, `remove-member` |
+| `keys:manage` | `list-api-keys`, `create-api-key`, `revoke-api-key` |
 
 A token without the tool's scope gets the JSON-RPC error `-32003` (`insufficient_scope`), which names the scope it needed.
 `domains:disconnect` is its own scope so a grant that may set domains up cannot also remove them.
+
+The four `domains:` scopes act on domains. The other eight are workspace scopes:
+they mirror what a signed in person does in the console. A workspace scope works
+only while the person who approved the agent still holds that permission in the
+workspace, so a demotion cuts the agent's access with it. An agent never acts as
+an owner: making an owner, changing an owner's role, and plan or payment changes
+all stay with a person in the console.
 
 ---
 
