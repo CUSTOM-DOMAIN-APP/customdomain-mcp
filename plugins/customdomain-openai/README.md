@@ -25,8 +25,8 @@ Then install `customdomain` from the marketplace and sign in when asked.
 
 | Path | Purpose |
 |---|---|
-| `plugin.json` | The portable manifest and the OpenAI listing fields |
-| `mcp.json` | The remote server and its OAuth settings (no secrets, no headers) |
+| `.codex-plugin/plugin.json` | The manifest and the listing fields (`interface`) |
+| `.mcp.json` | The remote server; sign in is OAuth with no secrets and no headers |
 | `skills/` | `get-started`, `connect-a-domain`, `fix-a-domain`, `email-and-redirects` |
 | `assets/` | Logo and composer icon |
 

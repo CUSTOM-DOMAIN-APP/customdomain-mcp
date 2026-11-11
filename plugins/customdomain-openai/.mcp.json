@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "customdomain": {
+      "type": "http",
+      "url": "https://mcp.customdomain.ai/openai/mcp",
+      "oauth_resource": "https://mcp.customdomain.ai/openai/mcp"
+    }
+  }
+}
