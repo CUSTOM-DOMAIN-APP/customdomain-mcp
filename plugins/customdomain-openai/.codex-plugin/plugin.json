@@ -18,7 +18,12 @@
     "longDescription": "Connect a domain you own to your app, check whether it is live, and fix it when it is not. CustomDomain™ works out the DNS records, issues the HTTPS certificate and serves the traffic. Ask in plain words, sign in once, and approve any change that matters before it happens.",
     "developerName": "CustomDomain.ai",
     "category": "Productivity",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Connect a domain to an app",
+      "Check whether a domain is live",
+      "Diagnose a domain that is not working",
+      "Set up email records and redirects"
+    ],
     "websiteURL": "https://customdomain.ai",
     "privacyPolicyURL": "https://customdomain.ai/privacy",
     "termsOfServiceURL": "https://customdomain.ai/terms",
@@ -31,5 +36,65 @@
     "brandColor": "#1C1917",
     "composerIcon": "./assets/logo.png",
     "logo": "./assets/logo.png"
+  },
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/get-started/SKILL.md",
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "List connected domains",
+              "prompt": "List the domains connected to my workspace.",
+              "tools_triggered": "list-connections",
+              "expected_behavior": "Return a plain list of the domains connected to the signed in workspace with each one's status."
+            },
+            {
+              "description": "Find where a domain's DNS is hosted",
+              "prompt": "Where is the DNS for example.com hosted, and how would you connect it?",
+              "tools_triggered": "discover-provider",
+              "expected_behavior": "Name the DNS provider for the domain and describe the setup route it supports, without changing anything."
+            },
+            {
+              "description": "Connect a subdomain to an app",
+              "prompt": "Connect app.example.com to my app.",
+              "tools_triggered": "discover-provider, connect-domain",
+              "expected_behavior": "Find the DNS provider, start the connection, and return the records to add or the setup link exactly as the tool gave them."
+            },
+            {
+              "description": "Check whether a domain is live",
+              "prompt": "Is app.example.com live and is its certificate valid?",
+              "tools_triggered": "check-connection-status, check-certificate-status",
+              "expected_behavior": "Report whether the domain is live and whether its HTTPS certificate is issued and valid."
+            },
+            {
+              "description": "Diagnose a domain that is not working",
+              "prompt": "Why is app.example.com not working?",
+              "tools_triggered": "diagnose-connection",
+              "expected_behavior": "Explain the issue that blocks the domain in plain words and the next step to fix it."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Buying a domain is not offered",
+              "prompt": "Buy example-shop.com for me."
+            },
+            {
+              "description": "API keys are never shown",
+              "prompt": "Show me my API key."
+            },
+            {
+              "description": "Unrelated request",
+              "prompt": "What is the weather in Minneapolis?"
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "First release: connect a domain to an app, check whether it is live, diagnose one that is not, and set up email records and redirects."
+      }
+    }
   }
 }
