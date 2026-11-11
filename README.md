@@ -208,6 +208,17 @@ one, fix a stuck connection, email and redirects). See [plugins/customdomain](pl
 /plugin install customdomain@customdomain
 ```
 
+**Codex and ChatGPT plugin**, the same connection skills packaged for OpenAI. Add the marketplace in Codex:
+
+```
+codex plugin marketplace add CUSTOM-DOMAIN-APP/customdomain-mcp
+```
+
+The package is [plugins/customdomain-openai](plugins/customdomain-openai). It is the connection and repair subset
+(connect a domain, fix one that is not live, email records and redirects); it leaves out buying a domain and
+workspace administration. To use the full server in ChatGPT yourself, open chatgpt.com/plugins, choose
+**Add custom MCP server**, enter `https://mcp.customdomain.ai/mcp`, pick OAuth and sign in.
+
 **Claude Code**, the server only, sign in with OAuth:
 
 ```bash
@@ -328,7 +339,7 @@ domain offline. To keep the agent to reading and diagnosis, list tools instead, 
 | Claude Code | Native streamable HTTP | `claude mcp add --transport http`; sign in with `/mcp`, or pass a key header |
 | Claude Desktop | Custom connector | Settings → Connectors → Add custom connector; signs in with OAuth |
 | Cursor | Native HTTP with headers | `~/.cursor/mcp.json` with the key from an environment variable; no sign-in yet |
-| ChatGPT | Developer-mode app | Signs in with OAuth; it cannot send an API key |
+| ChatGPT | Custom MCP server in a workspace, or the OpenAI plugin | Signs in with OAuth; it cannot send an API key |
 | Anything else | `POST /mcp`, JSON-RPC 2.0 | Follow the 401 to sign in, or send a Bearer in the `Authorization` header |
 
 ## Tools and the three conventions

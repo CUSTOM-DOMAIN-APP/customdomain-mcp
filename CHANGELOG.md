@@ -11,6 +11,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- An OpenAI plugin package, [`plugins/customdomain-openai`](plugins/customdomain-openai), and a Codex marketplace
+  file at `.agents/plugins/marketplace.json`. It carries the connect, fix and email skills and points at the
+  hosted server's connection and repair profile. It leaves out buying a domain and workspace administration.
+
 ## [0.7.0] (2026-11-09)
 
 Forty-six tools, up from twenty, and eight new scopes for running a workspace. The server reports 0.7.0.

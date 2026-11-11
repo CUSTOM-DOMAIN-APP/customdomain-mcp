@@ -1,0 +1,20 @@
+{
+  "name": "customdomain",
+  "interface": {
+    "displayName": "CustomDomain™"
+  },
+  "plugins": [
+    {
+      "name": "customdomain",
+      "source": {
+        "source": "local",
+        "path": "./plugins/customdomain-openai"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
