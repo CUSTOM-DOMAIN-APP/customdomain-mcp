@@ -23,7 +23,7 @@
     "shortDescription": "Connect and fix custom domains",
     "longDescription": "Connect a domain you own to your app. CustomDomain™ works out the DNS records, issues the HTTPS certificate and serves the traffic. It also checks whether a domain is live, fixes one that is not, and sets up email records and redirects. Ask in plain words, sign in once, and approve any change that matters before it happens.",
     "developerName": "CustomDomain™",
-    "category": "Productivity",
+    "category": "Developer Tools",
     "capabilities": [
       "Connect a domain to an app",
       "Check whether a domain is live",
@@ -102,7 +102,7 @@
         "commerce_description": "This plugin does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "0.1.1: Narrowed to connecting a domain you own to your app, checking and fixing it, and setting up email records and redirects. Skills now use only the tools the ChatGPT profile offers. Buying domains, plans and workspace admin (keys, members, webhooks) are handled in the CustomDomain™ console, and the plugin points to no billing page. Developer name is CustomDomain™. Privacy, terms and support links updated. The three negative test cases now state the expected behavior: no tool call and a plain reply."
+        "release_notes": "0.1.1: Narrowed to connecting a domain you own to your app, checking and fixing it, and setting up email records and redirects. Skills now use only the tools the ChatGPT profile offers. Buying domains, plans and workspace admin (keys, members, webhooks) are handled in the CustomDomain™ console, and the plugin points to no billing page. Developer name is CustomDomain™ and the category is Developer Tools. Privacy, terms and support links updated. The three negative test cases now state the expected behavior: no tool call and a plain reply."
       }
     }
   }

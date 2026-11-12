@@ -20,8 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - The OpenAI plugin is at 0.1.1: its skills use only the eighteen tools of the ChatGPT profile, the listing names
-  the developer as CustomDomain™ with updated privacy, terms and support links, and the review test cases state the
-  expected behavior. Buying domains, plans and workspace admin stay in the console.
+  the developer as CustomDomain™, files it under Developer Tools and carries updated privacy, terms and support
+  links, and the review test cases state the expected behavior. Buying domains, plans and workspace admin stay in
+  the console.
 
 ## [0.7.0] (2026-11-09)
 
