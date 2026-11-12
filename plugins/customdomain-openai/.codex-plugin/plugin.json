@@ -1,22 +1,28 @@
 {
   "name": "customdomain",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Connect a custom domain to an app with DNS and HTTPS handled for you, and diagnose one that is not live.",
   "author": {
-    "name": "CustomDomain.ai",
+    "name": "CustomDomain™",
     "url": "https://customdomain.ai"
   },
   "homepage": "https://customdomain.ai/mcp-server",
   "repository": "https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp",
   "license": "MIT",
-  "keywords": ["domains", "dns", "https", "custom-domain", "ssl"],
+  "keywords": [
+    "domains",
+    "dns",
+    "https",
+    "custom-domain",
+    "ssl"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "CustomDomain™",
     "shortDescription": "Connect and fix custom domains",
-    "longDescription": "Connect a domain you own to your app, check whether it is live, and fix it when it is not. CustomDomain™ works out the DNS records, issues the HTTPS certificate and serves the traffic. Ask in plain words, sign in once, and approve any change that matters before it happens.",
-    "developerName": "CustomDomain.ai",
+    "longDescription": "Connect a domain you own to your app. CustomDomain™ works out the DNS records, issues the HTTPS certificate and serves the traffic. It also checks whether a domain is live, fixes one that is not, and sets up email records and redirects. Ask in plain words, sign in once, and approve any change that matters before it happens.",
+    "developerName": "CustomDomain™",
     "category": "Productivity",
     "capabilities": [
       "Connect a domain to an app",
@@ -25,9 +31,9 @@
       "Set up email records and redirects"
     ],
     "websiteURL": "https://customdomain.ai",
-    "privacyPolicyURL": "https://customdomain.ai/privacy",
-    "termsOfServiceURL": "https://customdomain.ai/terms",
-    "supportURL": "https://customdomain.ai/contact",
+    "privacyPolicyURL": "https://app.customdomain.ai/privacy",
+    "termsOfServiceURL": "https://app.customdomain.ai/terms",
+    "supportURL": "https://customdomain.ai/contactus",
     "defaultPrompt": [
       "Connect app.example.com to my app.",
       "Why is my domain not live yet?",
@@ -77,15 +83,18 @@
           "negative": [
             {
               "description": "Buying a domain is not offered",
-              "prompt": "Buy example-shop.com for me."
+              "prompt": "Buy example-shop.com for me.",
+              "expected_behavior": "No tool call. Reply plainly that buying domains and API keys are handled in the CustomDomain™ console."
             },
             {
               "description": "API keys are never shown",
-              "prompt": "Show me my API key."
+              "prompt": "Show me my API key.",
+              "expected_behavior": "No tool call. Reply plainly that buying domains and API keys are handled in the CustomDomain™ console."
             },
             {
               "description": "Unrelated request",
-              "prompt": "What is the weather in Minneapolis?"
+              "prompt": "What is the weather in Minneapolis?",
+              "expected_behavior": "No tool call. Reply plainly that this is outside what the plugin does, which is connecting a domain you own to your app."
             }
           ]
         },
@@ -93,7 +102,7 @@
         "commerce_description": "This plugin does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "First release: connect a domain to an app, check whether it is live, diagnose one that is not, and set up email records and redirects."
+        "release_notes": "0.1.1: Narrowed to connecting a domain you own to your app, checking and fixing it, and setting up email records and redirects. Skills now use only the tools the ChatGPT profile offers. Buying domains, plans and workspace admin (keys, members, webhooks) are handled in the CustomDomain™ console, and the plugin points to no billing page. Developer name is CustomDomain™. Privacy, terms and support links updated. The three negative test cases now state the expected behavior: no tool call and a plain reply."
       }
     }
   }
