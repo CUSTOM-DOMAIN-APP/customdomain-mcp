@@ -1,0 +1,67 @@
+<!doctype html>
+<!-- How it works: the four screens a customer sees in the embedded widget (enter a domain, we detect the provider,
+     secure sign-in, set up and kept in sync). Screen wording follows the real widget copy. The provider is the
+     stand-in "Example DNS" for any of 100+ providers. Rendered to media/how.png by media/render.sh. -->
+<html lang="en"><head><meta charset="utf-8"><title>CustomDomain how it works</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .step { position: absolute; top: 336px; width: 330px; display: flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .m { position: absolute; top: 410px; width: 330px; height: 420px; }
+  .arrow { position: absolute; top: 608px; width: 24px; height: 24px; }
+  .prov { margin-left: auto; font-size: 14px; font-weight: 600; background: var(--soft); border-radius: 999px; padding: 3px 10px; }
+  .row .sub2 { font-size: 14px; color: var(--muted); }
+  .xs { font-size: 14px; color: var(--muted); }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="tree" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#1c1917"/><g fill="#fafaf9" stroke="#fafaf9"><rect x="238" y="250" width="36" height="150" rx="18" stroke="none"/><path d="M256 330 L196 372 M256 330 L316 372" stroke-width="26" stroke-linecap="round" fill="none"/><circle cx="256" cy="176" r="86" stroke="none"/><circle cx="176" cy="220" r="62" stroke="none"/><circle cx="336" cy="220" r="62" stroke="none"/><circle cx="212" cy="140" r="54" stroke="none"/><circle cx="300" cy="140" r="54" stroke="none"/><circle cx="256" cy="244" r="58" stroke="none"/></g></symbol>
+<symbol id="arr" viewBox="0 0 24 24"><path d="M8 4 L16 12 L8 20" fill="none" stroke="#a8a29e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol></defs></svg>
+
+<div class="top"><div class="brand"><svg><use href="#tree"/></svg>CustomDomain™</div><div class="tag">How it works</div></div>
+<div class="head"><h1>Detect the provider. Sign in once. Done.</h1>
+<p>The customer types a domain. We work out where it is hosted, they approve one secure sign-in, and the DNS records are set up and kept in sync.</p></div>
+
+<div class="step" style="left:80px"><span class="num">1</span>Enter a domain</div>
+<div class="step" style="left:450px"><span class="num">2</span>We detect the provider</div>
+<div class="step" style="left:820px"><span class="num">3</span>Secure sign-in</div>
+<div class="step" style="left:1190px"><span class="num">4</span>Set up and kept in sync</div>
+
+<div class="modal m" style="left:80px">
+  <h3>Connect your domain</h3>
+  <div class="fl">Domain</div>
+  <div class="field">app.example.com</div>
+  <div class="btn">Continue</div>
+  <div class="note" style="margin-top:22px">The widget detects where the domain is hosted, then signs in and sets it up.</div>
+</div>
+<svg class="arrow" style="left:418px"><use href="#arr"/></svg>
+
+<div class="modal m" style="left:450px">
+  <h3>Checking app.example.com…</h3>
+  <div style="margin-top:22px">
+    <div class="row"><span class="ck"></span>Looking up your DNS</div>
+    <div class="row"><span class="ck"></span><span>Identifying your provider</span></div>
+    <div class="row"><span class="spin"></span>Preparing your records</div>
+  </div>
+  <div class="note" style="margin-top:22px">Found it: <b>Example DNS</b>. Any of 100+ providers is detected the same way.</div>
+</div>
+<svg class="arrow" style="left:788px"><use href="#arr"/></svg>
+
+<div class="modal m" style="left:820px">
+  <span class="badge">Recommended</span>
+  <h3 style="margin-top:12px">Connect app.example.com</h3>
+  <div class="btn" style="margin-top:24px;font-size:16px;padding:15px 12px"><span class="mark">E</span>Authorize with Example DNS</div>
+  <div class="note">We only get one-time permission to update DNS records.</div>
+  <div class="link" style="margin-top:22px">Add the records instead</div>
+</div>
+<svg class="arrow" style="left:1158px"><use href="#arr"/></svg>
+
+<div class="modal m" style="left:1190px">
+  <span class="live"><i></i>Live</span>
+  <h3 style="margin-top:14px">app.example.com</h3>
+  <div class="rec"><b>CNAME</b><span class="grow">app</span><span class="pill ok">Found</span></div>
+  <div class="rec"><b>TXT</b><span class="grow">verification</span><span class="pill ok">Found</span></div>
+  <div class="rec"><b>HTTPS</b><span class="grow">certificate</span><span class="pill ok">On</span></div>
+  <div class="note" style="margin-top:22px">The records were added for you, and stay in sync.</div>
+</div>
+
+<div class="foot">Example DNS stands in for any of 100+ providers. If a provider has no sign-in, the widget guides the customer instead.</div>
+</body></html>

@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   file at `.agents/plugins/marketplace.json`. It carries the connect, fix and email skills and points at the
   hosted server's connection and repair profile. It leaves out buying a domain and workspace administration.
 
+- Five rendered illustrations under `media/` that tell the product story (the problem, how it works, the API
+  and SDK, the assistant connector, and a hero image) with their HTML sources and `media/render.sh`, shown in the
+  README. They use example domains and made-up data.
+- A dark logo for the OpenAI plugin (`assets/logo-dark.png`), wired as `logoDark` and `composerIconDark`.
+
 ### Changed
 
 - The OpenAI plugin is at 0.1.1: its skills use only the eighteen tools of the ChatGPT profile, the listing names
