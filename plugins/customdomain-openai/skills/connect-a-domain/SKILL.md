@@ -13,11 +13,11 @@ Use the `customdomain` MCP server. No tool accepts a DNS record from you; the se
    - If `blockedReason` is set (`unregistered` or `platform_subdomain`), stop and explain.
    - Read `recommendedRail` and `endUserAutomatic` to tell the person what to expect: a one-click authorization, a sign in at their provider, or records to add by hand.
    - Before asking anyone to authorize anything, surface these warnings: `recordConflicts` of kind `value-mismatch`, `cname-collision` or `spf-merge`; `willFallbackToManual: true` (offer to clear the conflicts first); a non-empty `apexMessage` (suggest connecting `www` instead); and a `caa-blocks-letsencrypt` conflict, which blocks the certificate until Let's Encrypt is allowed.
-   - If `rails.savedAccess` is present, relay its `use` text: the workspace already holds access the person can use from the console.
+   - If `rails.savedAccess` is present, relay its `use` text: the workspace already holds saved access to that provider. Call `find-saved-access` to see which saved access is ready for the domain; `use-saved-access` applies it once the person says yes (send `confirm: true`).
 2. **Start the connection.** Call `connect-domain` with the domain. Keep the returned `connectionId`.
    - `already_connected: true` means it existed already. Say so and skip to step 4; do not repeat setup instructions.
    - Relay `records` to the person exactly as returned (type, host, value), and give them `link`. The link is a one-click provider authorization only when the provider supports Domain Connect; otherwise it opens the same records in the console. Relay `message` too, since it can point at **Finish setup** for a sign in rail.
-   - On `billing_required` or `quota_exceeded`, call `check-billing-status` and pass on `details` and `billingUrl`.
+   - On `billing_required` or `quota_exceeded`, tell the person the workspace owner can resolve it in the CustomDomain™ console. Give no link and do not call any other tool for it.
 3. **Wait for DNS.** Call `check-connection-status` with the `connectionId` every 30 to 60 seconds. Status moves through `pending`, `propagating` and `live`. `failed` is not final: records added late still bring it back. Most connections go live within minutes once the records exist; a manual one can stay `pending` for hours.
 4. **Confirm.** When `connected` is `true`, tell the person the domain is live with HTTPS. Optionally call `check-certificate-status` to show the certificate.
 
