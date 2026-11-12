@@ -77,6 +77,23 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
   resolve, and an agent that can list, diagnose, recheck and re-apply is cheaper than a person doing it
   quarterly.
 
+## See it work
+
+Three things people ask an assistant to do with this server. These are illustrations drawn from the real tool
+names and result fields, with example domains and made-up data; they are not screenshots of a customer account.
+
+![CustomDomain™: custom domains, without the friction.](media/hero.png)
+
+![Asking Claude to connect app.example.com: the assistant finds the DNS provider, writes the record, and the domain goes live with HTTPS.](media/connect.png)
+
+![Asking Claude why a domain is not live: the assistant compares the expected record with what DNS shows and names the one record to delete.](media/fix.png)
+
+![Asking Claude to set up email records: MX and SPF are added, DKIM needs the key from the mail provider.](media/email.png)
+
+The sources are plain HTML in [`media/src`](media/src). Run `media/render.sh` (headless Chrome) to rebuild the PNGs
+at 3200 by 2000 pixels. The plugin icon is `plugins/customdomain/.claude-plugin/icon.png`; the OpenAI package ships
+a light and a dark logo.
+
 ## What it does
 
 Forty-six tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow
