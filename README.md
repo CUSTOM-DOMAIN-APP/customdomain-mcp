@@ -79,16 +79,20 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
 
 ## See it work
 
-Three things people ask an assistant to do with this server. These are illustrations drawn from the real tool
-names and result fields, with example domains and made-up data; they are not screenshots of a customer account.
+CustomDomain™ is an embedded widget for SaaS products. The customer types a domain, we find where it is hosted,
+they sign in once, and the DNS records are set up and kept in sync. The widget, the API and SDK, and this assistant
+connector all run the same engine. These are illustrations of that story with example domains and made-up data;
+they are not screenshots of a customer account.
 
-![CustomDomain™: custom domains, without the friction.](media/hero.png)
+![CustomDomain™: custom domains, without the friction. A SaaS settings page with the connect widget open on app.example.com.](media/hero.png)
 
-![Asking Claude to connect app.example.com: the assistant finds the DNS provider, writes the record, and the domain goes live with HTTPS.](media/connect.png)
+![The problem: over 100 providers can hold a domain, customers do not know which one holds theirs, and the manual DNS route is a list of steps they cannot finish.](media/problem.png)
 
-![Asking Claude why a domain is not live: the assistant compares the expected record with what DNS shows and names the one record to delete.](media/fix.png)
+![How it works: the customer enters a domain, the provider is detected, one secure sign-in is approved, and the records are set up and kept in sync.](media/how.png)
 
-![Asking Claude to set up email records: MX and SPF are added, DKIM needs the key from the mail provider.](media/email.png)
+![API and SDK: mint a token on your server, call open() from customdomain-js, and listen for the success event.](media/build.png)
+
+![The AI assistant connector: the widget, the API and SDK, and the connector are three ways into the same engine.](media/assistant.png)
 
 The sources are plain HTML in [`media/src`](media/src). Run `media/render.sh` (headless Chrome) to rebuild the PNGs
 at 3200 by 2000 pixels. The plugin icon is `plugins/customdomain/.claude-plugin/icon.png`; the OpenAI package ships

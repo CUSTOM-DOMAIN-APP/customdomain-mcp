@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Build visual: how a SaaS product ships the connect flow with the API and SDK. The code is the quickstart from the
+     customdomain-js README (mint a token on your server, call open(), listen for customdomain:success); the three cards
+     on the right say what the widget, SDK and API each are. Rendered to media/build.png by media/render.sh. -->
+<html lang="en"><head><meta charset="utf-8"><title>CustomDomain API and SDK</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .code { position: absolute; left: 80px; top: 330px; width: 840px; height: 590px; background: var(--ink); border-radius: 22px; color: #e7e5e4; overflow: hidden; box-shadow: 0 30px 80px rgba(28, 25, 23, 0.18); }
+  .code .bar { height: 50px; display: flex; align-items: center; gap: 8px; padding: 0 20px; border-bottom: 1px solid #292524; }
+  .code .dot { width: 12px; height: 12px; border-radius: 50%; background: #44403c; }
+  .code .fn { margin-left: 12px; font-family: "Geist Mono", monospace; font-size: 15px; color: #a8a29e; }
+  pre { font-family: "Geist Mono", monospace; font-size: 21px; line-height: 1.62; padding: 24px 32px; white-space: pre; }
+  .c { color: #78716c; } .k { color: #fde68a; } .s { color: #bbf7d0; } .f { color: #bae6fd; }
+  .side { position: absolute; left: 960px; top: 330px; width: 560px; display: flex; flex-direction: column; gap: 16px; }
+  .side .card { padding: 20px 26px; }
+  .side .card p { margin-top: 8px; font-size: 20px; line-height: 1.35; }
+  .chips { margin-top: 10px; display: flex; gap: 8px; }
+  .chip { font-family: "Geist Mono", monospace; font-size: 14px; background: var(--soft); border-radius: 8px; padding: 4px 10px; color: var(--muted); }
+  .no { margin-top: 18px; font-family: "Instrument Serif", serif; font-size: 36px; line-height: 1.15; }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="tree" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#1c1917"/><g fill="#fafaf9" stroke="#fafaf9"><rect x="238" y="250" width="36" height="150" rx="18" stroke="none"/><path d="M256 330 L196 372 M256 330 L316 372" stroke-width="26" stroke-linecap="round" fill="none"/><circle cx="256" cy="176" r="86" stroke="none"/><circle cx="176" cy="220" r="62" stroke="none"/><circle cx="336" cy="220" r="62" stroke="none"/><circle cx="212" cy="140" r="54" stroke="none"/><circle cx="300" cy="140" r="54" stroke="none"/><circle cx="256" cy="244" r="58" stroke="none"/></g></symbol></defs></svg>
+
+<div class="top"><div class="brand"><svg><use href="#tree"/></svg>CustomDomain™</div><div class="tag">API and SDK</div></div>
+<div class="head"><h1>One integration for every customer's domain.</h1>
+<p>Mint a token on your server, call open(), and the widget does the rest. Or drive the same flow from the API.</p></div>
+
+<div class="code">
+  <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="fn">your-app.ts</span></div>
+<pre><span class="c">// On your server: POST /v1/tokens</span>
+<span class="c">// (never ship an API key to the browser)</span>
+
+<span class="k">import</span> { customdomain } <span class="k">from</span> <span class="s">"customdomain-js"</span>;
+
+customdomain.<span class="f">open</span>({
+  applicationId: <span class="s">"app_123"</span>,
+  token: tokenFromYourServer,
+});
+
+<span class="c">// Hear when the domain is connected</span>
+window.<span class="f">addEventListener</span>(<span class="s">"customdomain:success"</span>, (e) =&gt; {
+  console.<span class="f">log</span>(<span class="s">"connected:"</span>, e.detail.domain);
+});</pre>
+</div>
+
+<div class="side">
+  <div class="card"><div class="label">Widget</div><p>The connect flow your customers see, in your colors and language.</p></div>
+  <div class="card"><div class="label">SDK</div><p>Install from npm, or add one script tag. React package included.</p><div class="chips"><span class="chip">customdomain-js</span><span class="chip">@customdomain/react</span></div></div>
+  <div class="card"><div class="label">API</div><p>Tokens, domain checks and connections, from your own code.</p></div>
+  <div class="no">No DNS provider SDKs.<br>No ACME client. No polling loop.</div>
+</div>
+</body></html>

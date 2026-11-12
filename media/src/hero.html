@@ -1,22 +1,54 @@
 <!doctype html>
-<!-- hero.png: the plugin's title image (brand tagline, what it does, the endpoint). Illustration only, no account data.
-     Render with ../render.sh. The tagline uses the generic term "custom domains" on purpose. -->
-<html lang="en"><head><meta charset="utf-8"><title>hero</title><link rel="stylesheet" href="shared.css">
+<!-- Hero visual: the product in one picture. A SaaS app with the CustomDomain connect widget embedded in its
+     settings screen, on a dark canvas, with the tagline. Rendered to media/hero.png by media/render.sh.
+     Example domain only. -->
+<html lang="en"><head><meta charset="utf-8"><title>CustomDomain hero</title>
+<link rel="stylesheet" href="shared.css">
 <style>
-  body { background: var(--ink); color: #fff; }
-  .mark { position: absolute; right: -60px; top: 80px; width: 760px; height: 760px; color: #fff; opacity: 0.07; }
-  .brand { color: #fff; }
-  .endpoint { color: #a8a29e; }
-  .hero { position: absolute; left: 80px; top: 250px; width: 1100px; }
-  .hero h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 132px; line-height: 0.98; letter-spacing: -0.02em; }
-  .hero p { margin-top: 34px; font-size: 32px; line-height: 1.4; color: #d6d3d1; max-width: 960px; }
-  .tiles { position: absolute; left: 80px; bottom: 96px; display: flex; gap: 16px; }
-  .tile { font-size: 26px; padding: 14px 28px; border: 1px solid #44403c; border-radius: 999px; color: #fafaf9; }
-  .foot { color: #a8a29e; }
+  body { background: var(--ink); color: var(--paper); }
+  .brand { color: var(--paper); }
+  .tag { color: #a8a29e; }
+  .copy { position: absolute; left: 80px; top: 250px; width: 700px; }
+  .copy h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 96px; line-height: 0.98; letter-spacing: -0.02em; }
+  .copy p { margin-top: 28px; font-size: 27px; line-height: 1.4; color: #d6d3d1; }
+  .pills { margin-top: 40px; display: flex; gap: 12px; }
+  .pills .pill { background: transparent; border-color: #44403c; color: var(--paper); }
+  .window { position: absolute; left: 860px; top: 150px; width: 660px; height: 640px; border-color: #44403c; }
+  .app { position: absolute; inset: 44px 0 0 0; display: flex; }
+  .side { width: 150px; background: var(--soft); border-right: 1px solid var(--line); padding: 26px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .main { flex: 1; padding: 34px 34px; }
+  .main .t { font-family: "Instrument Serif", serif; font-size: 36px; }
+  .scrim { position: absolute; inset: 44px 0 0 0; background: rgba(28, 25, 23, 0.38); }
+  .modal { position: absolute; left: 130px; top: 130px; width: 400px; padding: 30px; color: var(--ink); }
+  .cap { position: absolute; left: 860px; top: 820px; width: 660px; text-align: center; font-size: 19px; color: #a8a29e; }
 </style></head>
 <body>
-<svg class="mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="238" y="250" width="36" height="150" rx="18" fill="currentColor"/><path d="M256 330 L196 372 M256 330 L316 372" fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="round"/><g fill="currentColor"><circle cx="256" cy="176" r="86"/><circle cx="176" cy="220" r="62"/><circle cx="336" cy="220" r="62"/><circle cx="212" cy="140" r="54"/><circle cx="300" cy="140" r="54"/><circle cx="256" cy="244" r="58"/></g></svg>
-<div class="top"><div class="brand"><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="238" y="250" width="36" height="150" rx="18" fill="currentColor"/><path d="M256 330 L196 372 M256 330 L316 372" fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="round"/><g fill="currentColor"><circle cx="256" cy="176" r="86"/><circle cx="176" cy="220" r="62"/><circle cx="336" cy="220" r="62"/><circle cx="212" cy="140" r="54"/><circle cx="300" cy="140" r="54"/><circle cx="256" cy="244" r="58"/></g></svg> CustomDomain™</div><div class="endpoint">mcp.customdomain.ai/mcp</div></div>
-<div class="hero"><h1>Custom domains, without the friction.</h1><p>Let Claude and other AI agents find, connect, diagnose and manage domains for the people you serve.</p></div>
-<div class="tiles"><span class="tile">Find</span><span class="tile">Connect</span><span class="tile">Fix</span><span class="tile">Email</span></div>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="tree" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#fafaf9"/><g fill="#1c1917" stroke="#1c1917"><rect x="238" y="250" width="36" height="150" rx="18" stroke="none"/><path d="M256 330 L196 372 M256 330 L316 372" stroke-width="26" stroke-linecap="round" fill="none"/><circle cx="256" cy="176" r="86" stroke="none"/><circle cx="176" cy="220" r="62" stroke="none"/><circle cx="336" cy="220" r="62" stroke="none"/><circle cx="212" cy="140" r="54" stroke="none"/><circle cx="300" cy="140" r="54" stroke="none"/><circle cx="256" cy="244" r="58" stroke="none"/></g></symbol></defs></svg>
+
+<div class="top"><div class="brand"><svg><use href="#tree"/></svg>CustomDomain™</div><div class="tag">Embedded domain connect for SaaS</div></div>
+
+<div class="copy">
+  <h1>Custom domains, without the friction.</h1>
+  <p>Let your customers connect their own domain inside your app. We find where it is hosted, they sign in once, and the DNS records are set up and kept in sync.</p>
+  <div class="pills"><span class="pill">Widget</span><span class="pill">SDK</span><span class="pill">API</span><span class="pill">AI assistants</span></div>
+</div>
+
+<div class="window">
+  <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">your-app.com/settings/domain</span></div>
+  <div class="app">
+    <div class="side"><div class="skel" style="width:70%"></div><div class="skel" style="width:90%"></div><div class="skel" style="width:60%"></div><div class="skel" style="width:80%"></div></div>
+    <div class="main"><div class="t">Custom domain</div>
+      <div class="skel" style="width:70%;margin-top:22px"></div><div class="skel" style="width:50%;margin-top:14px"></div>
+      <div class="skel" style="width:85%;margin-top:40px;height:90px;border-radius:14px"></div></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="modal">
+    <h3>Connect your domain</h3>
+    <div class="fl">Domain</div>
+    <div class="field">app.example.com</div>
+    <div class="btn">Continue</div>
+    <div class="note">Detects where the domain is hosted, then signs in and sets it up.</div>
+  </div>
+</div>
+<div class="cap">The CustomDomain™ widget, embedded in your product</div>
 </body></html>
