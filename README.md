@@ -204,7 +204,7 @@ To give a project its key without copying one, run this in the project. It opens
 sign-in, then creates a key and writes `CUSTOMDOMAIN_API_KEY` and `CUSTOMDOMAIN_APPLICATION_ID` to `.env.local`:
 
 ```bash
-npx customdomain init
+npx @customdomain/cli init
 ```
 
 The [CLI](https://github.com/CUSTOM-DOMAIN-APP/customdomain-cli) is also on Homebrew:
