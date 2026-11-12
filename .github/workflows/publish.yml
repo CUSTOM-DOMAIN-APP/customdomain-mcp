@@ -1,0 +1,44 @@
+# publish.yml keeps the directories current when this repo changes. When server.json's version is new, it publishes
+# that version to the official MCP Registry (which GitHub's MCP Registry, PulseMCP and others mirror) and tags a
+# GitHub release. The Claude plugin marketplace, Smithery and Glama read this repo directly, so a merge is enough.
+name: publish
+on:
+  push:
+    branches: [main]
+    paths: [server.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the version
+        id: v
+        run: |
+          version=$(jq -r .version server.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          name=$(jq -r .name server.json)
+          if curl -fsS "https://registry.modelcontextprotocol.io/v0/servers?search=$name" \
+               | jq -e --arg v "$version" '.servers[] | select(.server.version == $v)' >/dev/null; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install mcp-publisher
+        if: steps.v.outputs.published != 'true'
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/v1.7.9/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher --version || true
+      - name: Publish to the MCP Registry
+        if: steps.v.outputs.published != 'true'
+        env:
+          MCP_REGISTRY_DNS_KEY: ${{ secrets.MCP_REGISTRY_DNS_KEY }}
+        run: |
+          ./mcp-publisher validate
+          ./mcp-publisher login dns --domain customdomain.ai -private-key "$MCP_REGISTRY_DNS_KEY"
+          ./mcp-publisher publish
+      - name: Tag a GitHub release
+        if: steps.v.outputs.published != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v${{ steps.v.outputs.version }}" --target "$GITHUB_SHA" --generate-notes --latest
