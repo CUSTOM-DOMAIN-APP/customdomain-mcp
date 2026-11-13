@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `check-nameserver-status` returns `verifyDiffs`, `updateLock`, `overlapUntil` and `recordsRestored`, and
+  `copySource` may be `transfer`. Its description names the new fields.
+
 - An OpenAI plugin package, [`plugins/customdomain-openai`](plugins/customdomain-openai), and a Codex marketplace
   file at `.agents/plugins/marketplace.json`. It carries the connect, fix and email skills and points at the
   hosted server's connection and repair profile. It leaves out buying a domain and workspace administration.
