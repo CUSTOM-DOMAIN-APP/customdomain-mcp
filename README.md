@@ -200,6 +200,16 @@ may do, and the agent gets a scoped token. Clients that cannot sign in use an AP
 `cd_test_...` (older `sk_live_` / `sk_test_` keys keep working). Keep a key in an environment variable, never in
 a file you commit.
 
+To give a project its key without copying one, run this in the project. It opens a page where you approve the
+sign-in, then creates a key and writes `CUSTOMDOMAIN_API_KEY` and `CUSTOMDOMAIN_APPLICATION_ID` to `.env.local`:
+
+```bash
+npx @customdomain/cli init
+```
+
+The [CLI](https://github.com/CUSTOM-DOMAIN-APP/customdomain-cli) is also on Homebrew:
+`brew install custom-domain-app/tap/customdomain`.
+
 **Claude Code plugin**, the server plus skills that teach Claude the safe order of calls (connect a domain, find
 one, fix a stuck connection, email and redirects). See [plugins/customdomain](plugins/customdomain):
 
