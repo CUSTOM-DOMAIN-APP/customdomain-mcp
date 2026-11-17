@@ -632,7 +632,11 @@ Returns:
 | `oldNameservers[]`, `newNameservers[]`, `observedNameservers[]` | Before, after, and what the registry lists now. |
 | `waitingFor`, `nextStep` | What the move waits on, and what a person has to do next. Relay `nextStep` when it is set. |
 | `failureCode`, `failureDetail` | Why a move failed. |
-| `recordsCopied`, `emailRecords`, `copySource`, `copyWarnings[]` | How many records were copied to the new host, how many are mail records, and how: `api` (the whole zone, read from the old host) or `discovery` (read from public DNS, so one may be missing; the move waits in `needs_review` and `copyWarnings` says what to check). |
+| `recordsCopied`, `emailRecords`, `copySource`, `copyWarnings[]` | How many records were copied to the new host, how many are mail records, and how: `api` (the whole zone, read from the old host), `transfer` (the whole zone, copied from the old nameservers) or `discovery` (read from public DNS, so one may be missing; the move waits in `needs_review` and `copyWarnings` says what to check). |
+| `verifyDiffs[]` | Differences found before the switch between what the old and the new DNS answer (also in `copyWarnings`). The move waits in `needs_review` until a person confirms them; a confirmed one does not stop it again. |
+| `updateLock` | `client` or `server` when the domain is locked against changes at the registry: the lock has to be lifted first (`nextStep` says where). |
+| `overlapUntil` | Once the move is done: until when some networks may still use the old nameservers. Tell the person to keep the old DNS host's records until then. |
+| `recordsRestored` | How many of the domain's old records a move back to the registrar's own DNS added there. |
 | `dnssec` | `true` while the registry lists a DS (DNSSEC) record for the domain. |
 | `canRollback`, `rollbackPath`, `rollbackDefault`, `rollbackTargets[]`, `rollbackTarget` | Whether and how the move can be undone; see [`rollback-nameservers`](#rollback-nameservers). |
 
