@@ -77,6 +77,27 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
   resolve, and an agent that can list, diagnose, recheck and re-apply is cheaper than a person doing it
   quarterly.
 
+## See it work
+
+CustomDomain™ is an embedded widget for SaaS products. The customer types a domain, we find where it is hosted,
+they sign in once, and the DNS records are set up and kept in sync. The widget, the API and SDK, and this assistant
+connector all run the same engine. These are illustrations of that story with example domains and made-up data;
+they are not screenshots of a customer account.
+
+![CustomDomain™: custom domains, without the friction. A SaaS settings page with the connect widget open on app.example.com.](media/hero.png)
+
+![The problem: over 100 providers can hold a domain, customers do not know which one holds theirs, and the manual DNS route is a list of steps they cannot finish.](media/problem.png)
+
+![How it works: the customer enters a domain, the provider is detected, one secure sign-in is approved, and the records are set up and kept in sync.](media/how.png)
+
+![API and SDK: mint a token on your server, call open() from customdomain-js, and listen for the success event.](media/build.png)
+
+![The AI assistant connector: the widget, the API and SDK, and the connector are three ways into the same engine.](media/assistant.png)
+
+The sources are plain HTML in [`media/src`](media/src). Run `media/render.sh` (headless Chrome) to rebuild the PNGs
+at 3200 by 2000 pixels. The plugin icon is `plugins/customdomain/.claude-plugin/icon.png`; the OpenAI package ships
+a light and a dark logo.
+
 ## What it does
 
 Forty-six tools, one credential, no DNS records in any argument. Each of these is a tool call, not a workflow

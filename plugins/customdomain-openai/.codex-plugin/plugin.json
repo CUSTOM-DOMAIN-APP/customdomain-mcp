@@ -41,7 +41,9 @@
     ],
     "brandColor": "#1C1917",
     "composerIcon": "./assets/logo.png",
-    "logo": "./assets/logo.png"
+    "composerIconDark": "./assets/logo-dark.png",
+    "logo": "./assets/logo.png",
+    "logoDark": "./assets/logo-dark.png"
   },
   "extensions": {
     "com.openai": {

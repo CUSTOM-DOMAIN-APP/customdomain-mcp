@@ -1,0 +1,69 @@
+<!doctype html>
+<!-- Problem visual: customers do not know which provider holds their domain (100+ possible), and the manual DNS
+     route is a to-do list they cannot finish. Three cards: the customer's question, the 100+ places, the manual steps.
+     Rendered to media/problem.png by media/render.sh. Generic category words only, no vendor names. -->
+<html lang="en"><head><meta charset="utf-8"><title>CustomDomain problem</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .cols { position: absolute; left: 80px; top: 330px; width: 1440px; display: flex; gap: 45px; }
+  .col { width: 450px; height: 560px; padding: 30px; display: flex; flex-direction: column; }
+  .bub { margin-top: 18px; border-radius: 18px; padding: 18px 20px; font-size: 21px; line-height: 1.4; max-width: 92%; }
+  .me { background: var(--soft); border-bottom-left-radius: 6px; }
+  .sup { background: var(--ink); color: #fff; margin-left: auto; border-bottom-right-radius: 6px; }
+  .who { font-size: 14px; font-weight: 600; color: var(--muted); margin-top: 22px; letter-spacing: 0.04em; }
+  .big { font-family: "Instrument Serif", serif; font-size: 84px; line-height: 1; margin-top: 14px; }
+  .big small { font-family: "Inter", sans-serif; font-size: 20px; color: var(--muted); display: block; margin-top: 6px; line-height: 1.35; }
+  .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-top: 22px; }
+  .tile { height: 32px; border-radius: 9px; background: var(--line); }
+  .tile.q { background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; }
+  .cats { margin-top: 22px; font-size: 17px; line-height: 1.5; color: var(--muted); }
+  ol { margin-top: 20px; padding-left: 0; list-style: none; counter-reset: s; }
+  ol li { counter-increment: s; position: relative; padding: 13px 0 13px 46px; font-size: 20px; line-height: 1.35; border-bottom: 1px solid var(--line); }
+  ol li:last-child { border-bottom: 0; }
+  ol li::before { content: counter(s); position: absolute; left: 0; top: 12px; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--faint); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; }
+  ol li em { font-style: normal; color: var(--bad); }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="tree" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#1c1917"/><g fill="#fafaf9" stroke="#fafaf9"><rect x="238" y="250" width="36" height="150" rx="18" stroke="none"/><path d="M256 330 L196 372 M256 330 L316 372" stroke-width="26" stroke-linecap="round" fill="none"/><circle cx="256" cy="176" r="86" stroke="none"/><circle cx="176" cy="220" r="62" stroke="none"/><circle cx="336" cy="220" r="62" stroke="none"/><circle cx="212" cy="140" r="54" stroke="none"/><circle cx="300" cy="140" r="54" stroke="none"/><circle cx="256" cy="244" r="58" stroke="none"/></g></symbol></defs></svg>
+
+<div class="top"><div class="brand"><svg><use href="#tree"/></svg>CustomDomain™</div><div class="tag">The problem</div></div>
+<div class="head"><h1>Customers don't know where their domain lives.</h1>
+<p>Over 100 providers can hold a domain. Most people can't say which one holds theirs, so connecting it to your app turns into a support ticket.</p></div>
+
+<div class="cols">
+  <div class="card col">
+    <div class="label">The customer</div>
+    <div class="bub me">I want to use my own domain with your app. It says to add DNS records, but I don't remember where I bought it.</div>
+    <div class="who" style="text-align:right">YOUR SUPPORT TEAM</div>
+    <div class="bub sup" style="margin-top:10px">Check which nameservers it uses, log in to that provider, and look for the DNS settings.</div>
+    <div class="bub me">Nameservers? I don't know who my provider is.</div>
+  </div>
+  <div class="card col">
+    <div class="label">Where could it be?</div>
+    <div class="big">100+<small>places a domain can live</small></div>
+    <div class="grid" id="grid"></div>
+    <div class="cats">Registrars, DNS hosts, website builders, hosting companies and cloud platforms. Each with its own screens and names.</div>
+  </div>
+  <div class="card col">
+    <div class="label">The manual route</div>
+    <ol>
+      <li>Work out which provider holds the domain</li>
+      <li>Log in, if you remember how</li>
+      <li>Find the DNS settings, which every provider names differently</li>
+      <li>Add a CNAME and a TXT record <em>exactly</em> as written</li>
+      <li>Mind the Name field and the trailing dot</li>
+      <li>Wait, check again, and hope</li>
+    </ol>
+  </div>
+</div>
+<div class="foot">The result: stalled setups and support tickets, for something that should take a minute.</div>
+<script>
+  var g = document.getElementById("grid"), shades = ["#e7e5e4", "#d6d3d1", "#f1efee", "#cdc9c5"];
+  for (var i = 0; i < 40; i++) {
+    var d = document.createElement("div");
+    d.className = "tile" + (i === 18 ? " q" : "");
+    if (i === 18) d.textContent = "?"; else d.style.background = shades[(i * 7 + 3) % 4];
+    g.appendChild(d);
+  }
+</script>
+</body></html>
