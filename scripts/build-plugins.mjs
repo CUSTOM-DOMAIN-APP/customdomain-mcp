@@ -7,6 +7,12 @@
 //   node scripts/build-plugins.mjs --check    validate, then fail if a generated folder differs (for CI)
 //   node scripts/build-plugins.mjs --validate validate skills/ only
 //
+// Validation also checks every `METHOD /v1/path` call, webhook event name and `customdomain:` widget message the
+// skills name against the product's API description and widget protocol file. This repo holds neither, so they are
+// read from a local checkout of the main repo when CUSTOMDOMAIN_REPO_PATH is set, and otherwise fetched from the
+// raw files at the commit pinned in scripts/validate-sources.json. When neither works, those checks are skipped
+// with a warning and everything else still runs.
+//
 // Validation, per skill: the folder name is lowercase words joined by hyphens (up to 64 characters) and equals
 // the frontmatter `name`; `description` is present and up to 1024 characters; frontmatter keys come only from the
 // open Agent Skills format plus any key a target plugin needs; every markdown file is under 500 lines; relative
@@ -47,6 +53,7 @@ const args = new Set(process.argv.slice(2));
 const mode = args.has("--check") ? "check" : args.has("--validate") ? "validate" : "build";
 
 const errors = [];
+const warnings = [];
 const fail = (where, msg) => errors.push(`${where}: ${msg}`);
 
 function listSkillNames() {
@@ -93,6 +100,78 @@ function parseFrontmatter(text, where) {
     fields[kv[1]] = value;
   }
   return { fields, end: m[0].length };
+}
+
+const EVENT_NAME = /^(connection|domain|certificate|credential|webhook)\.[a-z_]+$/;
+// A call is `METHOD /v1/path`, `METHOD https://api.customdomain.ai/v1/path`, `-X METHOD <url>` or a bare API url
+// (any method). A `<PLACEHOLDER>` in a path counts as one `{id}` segment.
+const PATH_CHARS = "[A-Za-z0-9_\\-/{}<>:.]*[A-Za-z0-9_}>]";
+const CALLS = [
+  new RegExp(`\\b(GET|POST|PUT|PATCH|DELETE) (?:https://api\\.customdomain\\.ai)?(/v1/${PATH_CHARS})`, "g"),
+  new RegExp(`-X (GET|POST|PUT|PATCH|DELETE) (?:"|')?https://api\\.customdomain\\.ai(/v1/${PATH_CHARS})`, "g"),
+  new RegExp(`()https://api\\.customdomain\\.ai(/v1/${PATH_CHARS})`, "g"),
+];
+const template = (p) => p.replace(/^\/v1/, "").replace(/\{[^}]*\}|<[^>]*>/g, "{}");
+
+/** Reads the OpenAPI file and the widget protocol file: local checkout first, then the pinned raw files. */
+async function loadReference() {
+  const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, "scripts/validate-sources.json"), "utf8"));
+  const local = process.env.CUSTOMDOMAIN_REPO_PATH;
+  const read = async (rel) => {
+    if (local) return fs.readFileSync(path.join(local, rel), "utf8");
+    const res = await fetch(`https://raw.githubusercontent.com/${cfg.repo}/${cfg.sha}/${rel}`, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${rel}`);
+    return res.text();
+  };
+  try {
+    return { openapi: await read(cfg.files.openapi), protocol: await read(cfg.files.protocol) };
+  } catch (e) {
+    warnings.push(
+      `skipped the API, event and widget message checks (${e.message}). Set CUSTOMDOMAIN_REPO_PATH to a local checkout of ${cfg.repo} to run them.`,
+    );
+    return null;
+  }
+}
+
+/** Paths and their methods from the OpenAPI file, read line by line (plain block YAML). */
+function loadApiPaths(text) {
+  const paths = new Map();
+  let inPaths = false;
+  let cur = null;
+  for (const line of text.split("\n")) {
+    if (/^paths:/.test(line)) { inPaths = true; continue; }
+    if (inPaths && /^[a-z]/.test(line)) break;
+    if (!inPaths) continue;
+    const p = /^ {2}(\/\S*):\s*$/.exec(line);
+    if (p) { cur = new Set(); paths.set(p[1].replace(/^['"]|['"]$/g, ""), cur); continue; }
+    const m = /^ {4}(get|post|put|patch|delete):/.exec(line);
+    if (m && cur) cur.add(m[1].toUpperCase());
+  }
+  return paths;
+}
+
+/** Fails on any call, event or message a skill names that the reference files do not have. */
+function checkAgainstReference(name, ref, apiPaths) {
+  const known = new Map([...apiPaths].map(([p, methods]) => [template(p), methods]));
+  const dir = path.join(SOURCE, name);
+  for (const rel of walk(dir).filter((r) => r.endsWith(".md"))) {
+    const at = `skills/${name}/${rel}`;
+    const text = fs.readFileSync(path.join(dir, rel), "utf8");
+    for (const re of CALLS) {
+      for (const m of text.matchAll(re)) {
+        const methods = known.get(template(m[2]));
+        const label = `${m[1] ? m[1] + " " : ""}${m[2]}`;
+        if (!methods) fail(at, `${label} is not in the API description`);
+        else if (m[1] && !methods.has(m[1])) fail(at, `${label}: that method is not in the API description`);
+      }
+    }
+    for (const m of text.matchAll(/`([a-z_]+\.[a-z_]+)`/g)) {
+      if (EVENT_NAME.test(m[1]) && !ref.openapi.includes(m[1])) fail(at, `event ${m[1]} is not in the API description`);
+    }
+    for (const m of text.matchAll(/`(customdomain:[a-z-]+)`/g)) {
+      if (!ref.protocol.includes(m[1])) fail(at, `widget message ${m[1]} is not in the protocol file`);
+    }
+  }
 }
 
 function validateSkill(name) {
@@ -183,6 +262,13 @@ function write(target, expected) {
 const names = listSkillNames();
 if (names.length === 0) fail("skills", "no skills found");
 for (const name of names) validateSkill(name);
+const reference = await loadReference();
+if (reference) {
+  const apiPaths = loadApiPaths(reference.openapi);
+  if (apiPaths.size === 0) fail("skills", "the API description has no paths, so calls cannot be checked");
+  for (const name of names) checkAgainstReference(name, reference, apiPaths);
+}
+for (const w of warnings) console.warn(`warning: ${w}`);
 
 if (errors.length === 0 && mode !== "validate") {
   for (const target of TARGETS) {

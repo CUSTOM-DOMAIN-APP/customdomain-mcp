@@ -1,0 +1,8 @@
+{
+  "repo": "CUSTOM-DOMAIN-APP/CUSTOM-DOMAIN",
+  "sha": "28655482468a84c3081eb2cf697c4e805f7db829",
+  "files": {
+    "openapi": "apps/app/openapi-v1.yaml",
+    "protocol": "packages/widget/protocol.json"
+  }
+}

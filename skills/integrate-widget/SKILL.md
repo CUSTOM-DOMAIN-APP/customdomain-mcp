@@ -43,6 +43,7 @@ Content-Type: application/json
 - `end_user_ref` is your own id for the signed-in customer. See "End user reference" below.
 - `domain` is optional. It binds the token to one host, so the token can only act on that host.
 - If the mint call fails, answer your front end with a plain error. Do not forward the raw upstream body.
+- A fuller walk through of this route, with a Node example and the failure codes, is in [the token route reference](references/token-route.md).
 - Token docs and the full error table: https://docs.customdomain.ai/docs/authentication/widget-tokens
 
 An application created over the API (not in the console) mints with its `client_secret` in the body instead of the bearer. Do not put an API key in `client_secret`. Details are on the widget tokens page above.

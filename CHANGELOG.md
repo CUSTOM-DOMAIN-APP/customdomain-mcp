@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `scripts/build-plugins.mjs --validate` now checks every `METHOD /v1/path` call, webhook event name and `customdomain:` widget message in the skills against the product's API description and widget protocol file, read from a checkout named by `CUSTOMDOMAIN_REPO_PATH` or fetched at the commit pinned in `scripts/validate-sources.json` (skipped with a warning when neither works). The `integrate-widget` skill gains a token route reference.
 - `skills/` at the repository root is the one source of the agent skills. Both plugins' skills are generated from it
   by `scripts/build-plugins.mjs` (with a `--check` mode that CI runs). New skills for a software company building the
   widget into its product: `integrate-widget`, `setup-webhooks`, `go-live-checklist` and `debug-failed-connection`.
