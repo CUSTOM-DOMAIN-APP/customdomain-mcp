@@ -1,19 +1,8 @@
-# CustomDomain™ MCP Server: custom domains for AI agents
-This is the official CustomDomain™ product MCP server. Its only endpoint is `https://mcp.customdomain.ai/mcp`,
-listed in the official MCP registry as `ai.customdomain/mcp`, with the OAuth scopes `domains:read`,
-`domains:connect`, `domains:disconnect`, `domains:purchase`, `stats:read`, `audit:read`, `app:read`, `app:write`,
-`tokens:mint`, `member:read`, `member:manage` and `keys:manage`. No other host serves it, so a server at any other
-address that presents itself as CustomDomain™ is not this one.
-
-The MCP server for custom domains: let Claude and other AI agents find, connect, diagnose and manage domains.
-
-**Status:** Production · server 0.7.0 · release [v0.7.0](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases/tag/v0.7.0)
-
-[![live](https://img.shields.io/badge/live-mcp.customdomain.ai-1c1917?style=flat)](https://customdomain.ai/mcp-server)
-[![MCP registry](https://img.shields.io/badge/MCP%20registry-ai.customdomain%2Fmcp-1c1917?style=flat)](https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp)
-[![protocol](https://img.shields.io/badge/protocol-2025--06--18-1c1917?style=flat)](https://docs.customdomain.ai/docs/mcp/overview)
-[![docs](https://img.shields.io/badge/docs-docs.customdomain.ai-1c1917?style=flat)](https://docs.customdomain.ai/docs/mcp/overview)
-[![license](https://img.shields.io/badge/license-MIT-1c1917?style=flat)](./LICENSE)
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/customdomain-mark-dark.png"><img src=".github/media/customdomain-mark.png" alt="CustomDomain" width="56"></picture></p>
+<h1 align="center">CustomDomain MCP</h1>
+<p align="center"><b>The hosted MCP server for teams that embed the CustomDomain™ widget: connect, check and fix your users' domains from your agent.</b></p>
+<p align="center"><a href="https://registry.modelcontextprotocol.io/v0/servers?search=ai.customdomain%2Fmcp"><img src="https://img.shields.io/badge/MCP%20registry-ai.customdomain%2Fmcp-1c1917?style=flat&logo=modelcontextprotocol&logoColor=white" alt="MCP registry"></a> <a href="https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/releases"><img src="https://img.shields.io/github/v/release/CUSTOM-DOMAIN-APP/customdomain-mcp?style=flat&color=1c1917&logo=github&logoColor=white&label=release" alt="release"></a> <a href="https://docs.customdomain.ai/docs/mcp/overview"><img src="https://img.shields.io/badge/docs-MCP-1c1917?style=flat" alt="docs"></a> <a href="https://www.producthunt.com/products/custom-domain"><img src="https://img.shields.io/badge/Product%20Hunt-CustomDomain-1c1917?style=flat&logo=producthunt&logoColor=white" alt="Product Hunt"></a></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/widget-flow-dark.png"><img src=".github/media/widget-flow-light.png" alt="The CustomDomain widget: your user types their domain, signs in at their provider, and it goes live" width="860"></picture></p>
 
 [Website](https://customdomain.ai) · [Docs](https://docs.customdomain.ai/docs) · [Console](https://app.customdomain.ai) · [Product page](https://customdomain.ai/mcp-server) · [MCP docs](https://docs.customdomain.ai/docs/mcp/overview) · [Tool reference](./TOOLS.md) · [Provider coverage](https://docs.customdomain.ai/docs/providers) · [Pricing](https://customdomain.ai/pricing)
 
@@ -21,30 +10,19 @@ The MCP server for custom domains: let Claude and other AI agents find, connect,
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-install%20server-1c1917?style=flat&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=customdomain&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.customdomain.ai%2Fmcp%22%7D&quality=insiders)
 · Claude Code, Claude Desktop and Cursor: [Quickstart](#quickstart) · GitHub Copilot cloud agent: [configuration](#github-copilot-cloud-agent)
 
-Stars are how other developers find this server on GitHub. If it is useful to you, star the repository.
+The only official endpoint is `https://mcp.customdomain.ai/mcp`, listed in the MCP registry as `ai.customdomain/mcp`.
+A server at any other address that presents itself as CustomDomain™ is not this one.
 
 |  |  |
 |---|---|
-| **What it is** | A hosted MCP server that gives an AI agent forty-six tools: domain tools, and workspace tools for the account behind them |
-| **Who it's for** | Agent builders, SaaS platforms and coding-agent users who need a customer on their own domain |
+| **What it is** | A hosted MCP server: connect, check and fix the domains your users bring to your product |
+| **Who it's for** | Software companies whose users connect their own domain, and the agents their teams work with |
 | **Live at** | [customdomain.ai/mcp-server](https://customdomain.ai/mcp-server) · endpoint `https://mcp.customdomain.ai/mcp` |
-| **Stack** | Go 1.26 · JSON-RPC 2.0 over streamable HTTP · hosted, no datastore in the server |
-| **Status** | Production · 0.7.0 in the official MCP registry · 46 tools · 178 DNS providers catalogued, 62 automatic |
 
-CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server that lets an
-AI agent put a person on their own domain: connect a domain they already own, set up its email records,
-watch it go live with HTTPS, and find out why it has not. It replaces the part of that job a human normally
-does by hand in a DNS control panel. There is nothing to install and nothing to keep running: point your MCP
-client at the endpoint above.
-
-```mermaid
-flowchart LR
-  A["Agent<br/>Claude · Cursor · ChatGPT"] -->|"JSON-RPC over HTTPS"| M["mcp.customdomain.ai<br/>46 tools"]
-  M -->|"credential forwarded"| C["Control plane<br/>api.customdomain.ai"]
-  C --> R["Registrars<br/>search · price"]
-  C --> D["DNS providers<br/>178 catalogued · 62 automatic"]
-  C --> E["Edge<br/>TLS issued"]
-```
+CustomDomain™ MCP is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server for software
+products that let their users connect a domain. Your agent can connect a user's domain, set up its email
+records, watch it go live with HTTPS, and find out why it has not. There is nothing to install and nothing to
+keep running: point your MCP client at the endpoint above.
 
 ---
 
@@ -64,18 +42,12 @@ is an argument-list problem, and it gets solved by changing what the agent is ab
 
 ## Who it's for
 
-- **Teams building agents that ship things.** A coding agent, a site builder, a deploy bot: anything whose
-  output is a running app that needs an address a person will actually type. The agent connects the domain
-  and polls it to `live` instead of stopping at the last mile with a paragraph of DNS instructions.
 - **SaaS platforms with tenant domains.** If your customers connect their own domain to your product, this is
   the same engine the [CustomDomain™](https://customdomain.ai) widget and REST API run on, reached through the
   protocol your agents already speak.
 - **Email and messaging platforms.** Getting a sending domain authenticated (MX, SPF, DKIM, DMARC, in the
   right shapes, at the customer's provider) is one call here instead of a documentation page and a support
   queue.
-- **Anyone with a domain portfolio to keep alive.** Connections drift, certificates need records that still
-  resolve, and an agent that can list, diagnose, recheck and re-apply is cheaper than a person doing it
-  quarterly.
 
 ## What it does
 
@@ -163,11 +135,6 @@ what to add, and the completion signal is a boolean rather than a status string 
 - **A platform that keeps its users' domains working.** When the application maintains domains, the agent asks
   the person, calls `migrate-nameservers` with `confirm: true`, and polls `check-nameserver-status` until `done`,
   relaying `nextStep` whenever the person has to act at their registrar. `rollback-nameservers` undoes it.
-
-- **Buying the name, then connecting it.** `generate-domain-suggestions` or `search-domain-availability` for
-  the price, the person confirms the exact domain, `create-domain-order` with that domain in `confirm_domain`,
-  `check-order-status` until it completes, then `connect-domain`. On the hosted service this works for a
-  person's own sign-in with `domains:purchase` granted; the grant's monthly spend cap bounds every purchase.
 
 ## Why an MCP server and not a REST API
 
@@ -346,9 +313,9 @@ domain offline. To keep the agent to reading and diagnosis, list tools instead, 
 
 | Client | How it connects | Notes |
 |---|---|---|
-| Claude Code | Native streamable HTTP | `claude mcp add --transport http`; sign in with `/mcp`, or pass a key header |
-| Claude Desktop | Custom connector | Settings → Connectors → Add custom connector; signs in with OAuth |
-| Cursor | Native HTTP with headers | `~/.cursor/mcp.json` with the key from an environment variable; no sign-in yet |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.simpleicons.org/claude/e7e5e4"><img src="https://cdn.simpleicons.org/claude/1c1917" alt="Claude" width="18" height="18"></picture> Claude Code | Native streamable HTTP | `claude mcp add --transport http`; sign in with `/mcp`, or pass a key header |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.simpleicons.org/claude/e7e5e4"><img src="https://cdn.simpleicons.org/claude/1c1917" alt="Claude" width="18" height="18"></picture> Claude Desktop | Custom connector | Settings → Connectors → Add custom connector; signs in with OAuth |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.simpleicons.org/cursor/e7e5e4"><img src="https://cdn.simpleicons.org/cursor/1c1917" alt="Cursor" width="18" height="18"></picture> Cursor | Native HTTP with headers | `~/.cursor/mcp.json` with the key from an environment variable; no sign-in yet |
 | ChatGPT | Custom MCP server in a workspace, or the OpenAI plugin | Signs in with OAuth; it cannot send an API key |
 | Anything else | `POST /mcp`, JSON-RPC 2.0 | Follow the 401 to sign in, or send a Bearer in the `Authorization` header |
 
