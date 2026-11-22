@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `skills/` at the repository root is the one source of the agent skills. Both plugins' skills are generated from it
+  by `scripts/build-plugins.mjs` (with a `--check` mode that CI runs). New skills for a software company building the
+  widget into its product: `integrate-widget`, `setup-webhooks`, `go-live-checklist` and `debug-failed-connection`.
+  The Claude plugin is at 0.1.3 and the OpenAI plugin at 0.1.2. Buying a domain is no longer in any skill.
 - An OpenAI plugin package, [`plugins/customdomain-openai`](plugins/customdomain-openai), and a Codex marketplace
   file at `.agents/plugins/marketplace.json`. It carries the connect, fix and email skills and points at the
   hosted server's connection and repair profile. It leaves out buying a domain and workspace administration.

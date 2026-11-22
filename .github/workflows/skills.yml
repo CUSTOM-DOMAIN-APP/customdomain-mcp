@@ -1,0 +1,21 @@
+# skills.yml checks that the plugin skills folders are exactly what scripts/build-plugins.mjs makes from skills/,
+# and that every skill passes the format checks. Run `node scripts/build-plugins.mjs` locally to fix a failure.
+name: skills
+on:
+  pull_request:
+    paths: [skills/**, plugins/**, scripts/build-plugins.mjs, .github/workflows/skills.yml]
+  push:
+    branches: [main]
+    paths: [skills/**, plugins/**, scripts/build-plugins.mjs, .github/workflows/skills.yml]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check the generated skills
+        run: node scripts/build-plugins.mjs --check

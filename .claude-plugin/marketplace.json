@@ -11,7 +11,7 @@
     {
       "name": "customdomain",
       "source": "./plugins/customdomain",
-      "description": "Search, register and connect custom domains with DNS and HTTPS handled for you.",
+      "description": "Connect custom domains with DNS and HTTPS handled for you, and build the widget into your product.",
       "category": "productivity",
       "homepage": "https://customdomain.ai/mcp-server"
     }

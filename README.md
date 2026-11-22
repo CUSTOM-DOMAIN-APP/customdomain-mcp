@@ -211,7 +211,7 @@ The [CLI](https://github.com/CUSTOM-DOMAIN-APP/customdomain-cli) is also on Home
 `brew install custom-domain-app/tap/customdomain`.
 
 **Claude Code plugin**, the server plus skills that teach Claude the safe order of calls (connect a domain, find
-one, fix a stuck connection, email and redirects). See [plugins/customdomain](plugins/customdomain):
+a name, fix a stuck connection, email and redirects, build the widget into a product). See [plugins/customdomain](plugins/customdomain):
 
 ```
 /plugin marketplace add CUSTOM-DOMAIN-APP/customdomain-mcp
@@ -352,6 +352,39 @@ domain offline. To keep the agent to reading and diagnosis, list tools instead, 
 | ChatGPT | Custom MCP server in a workspace, or the OpenAI plugin | Signs in with OAuth; it cannot send an API key |
 | Anything else | `POST /mcp`, JSON-RPC 2.0 | Follow the 401 to sign in, or send a Bearer in the `Authorization` header |
 
+## Skills
+
+Agent skills (the open [Agent Skills](https://agentskills.io) format) teach a coding agent the safe order of calls
+and how to build the widget into a product. They live in [`skills/`](skills), the one source, and both plugins
+below are generated from it.
+
+| Skill | What it does |
+|---|---|
+| `get-started` | What CustomDomain™ does and which skill to use |
+| `connect-a-domain` | Connect a domain the person owns, with the MCP tools |
+| `find-a-domain` | Look up name ideas, availability and price (Claude plugin only; it never buys) |
+| `fix-a-domain` | Find out why a connection is not live and repair it |
+| `email-and-redirects` | Mail records and permanent redirects |
+| `integrate-widget` | Add the widget to Next.js, React, Vue or plain JavaScript, with a server route for the token |
+| `setup-webhooks` | Register an endpoint, verify signatures, handle retries |
+| `go-live-checklist` | Move an integration from the Sandbox to real customers |
+| `debug-failed-connection` | Work out why a customer's connection will not go live |
+
+Install them with the plugins. In Claude Code:
+
+```
+/plugin marketplace add CUSTOM-DOMAIN-APP/customdomain-mcp
+/plugin install customdomain@customdomain
+```
+
+In Codex:
+
+```
+codex plugin marketplace add CUSTOM-DOMAIN-APP/customdomain-mcp
+```
+
+To change a skill, edit `skills/` and run `node scripts/build-plugins.mjs`; CI runs it with `--check`.
+
 ## Tools and the three conventions
 
 Three rules run through every tool, and they are the things integrators get wrong.
@@ -483,6 +516,9 @@ the judgment live one hop away.
 ├── CHANGELOG.md   # one entry per server version, matching the tags and GitHub releases
 ├── server.json    # MCP registry manifest: name ai.customdomain/mcp, version 0.7.0, remote endpoint, tools and scopes
 ├── glama.json     # Glama directory ownership claim
+├── skills/        # the one source of the agent skills
+├── scripts/       # build-plugins.mjs generates both plugins' skills from skills/
+├── plugins/       # the Claude and Codex plugins (their skills folders are generated)
 └── LICENSE        # MIT
 ```
 
