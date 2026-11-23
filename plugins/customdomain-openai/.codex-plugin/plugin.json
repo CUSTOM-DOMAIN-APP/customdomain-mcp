@@ -1,6 +1,6 @@
 {
   "name": "customdomain",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Connect a custom domain to an app with DNS and HTTPS handled for you, and diagnose one that is not live.",
   "author": {
     "name": "CustomDomain™",
@@ -102,7 +102,7 @@
         "commerce_description": "This plugin does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "0.1.1: Narrowed to connecting a domain you own to your app, checking and fixing it, and setting up email records and redirects. Skills now use only the tools the ChatGPT profile offers. Buying domains, plans and workspace admin (keys, members, webhooks) are handled in the CustomDomain™ console, and the plugin points to no billing page. Developer name is CustomDomain™ and the category is Developer Tools. Privacy, terms and support links updated. The three negative test cases now state the expected behavior: no tool call and a plain reply."
+        "release_notes": "0.1.2: Skills are now built from one shared source and add guides for building the widget into a product (embedding it, webhooks, going live and debugging a connection). 0.1.1: Narrowed to connecting a domain you own to your app, checking and fixing it, and setting up email records and redirects. Skills now use only the tools the ChatGPT profile offers. Buying domains, plans and workspace admin (keys, members, webhooks) are handled in the CustomDomain™ console, and the plugin points to no billing page. Developer name is CustomDomain™ and the category is Developer Tools. Privacy, terms and support links updated. The three negative test cases now state the expected behavior: no tool call and a plain reply."
       }
     }
   }

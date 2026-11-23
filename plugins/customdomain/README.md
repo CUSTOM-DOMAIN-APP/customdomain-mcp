@@ -1,15 +1,19 @@
 # CustomDomain™ plugin
 
-CustomDomain™ puts a customer's own domain in front of your app. This plugin connects Claude to the hosted CustomDomain™ MCP server so it can search for a domain, check live pricing, connect a domain the customer already owns, set up email or a redirect, and explain or repair a connection that is not live yet. DNS records and HTTPS certificates are handled by the service; Claude never asks anyone to paste a DNS record into a tool.
+CustomDomain™ puts a customer's own domain in front of your app. This plugin connects Claude to the hosted CustomDomain™ MCP server so it can look up domain names, connect a domain the customer already owns, set up email or a redirect, and explain or repair a connection that is not live yet. DNS records and HTTPS certificates are handled by the service; Claude never asks anyone to paste a DNS record into a tool.
 
 ## What it adds
 
 - **MCP server** `customdomain` at `https://mcp.customdomain.ai/mcp` (remote, streamable HTTP, OAuth sign in). Forty-six tools, listed in [TOOLS.md](https://github.com/CUSTOM-DOMAIN-APP/customdomain-mcp/blob/main/TOOLS.md).
 - **Skills** that teach Claude the safe order of calls:
   - `connect-a-domain`: discover the DNS provider, start the connection, relay the records or the one-click link, and wait until it is live.
-  - `find-a-domain`: name ideas, availability and price, and a purchase only after the person says yes.
+  - `find-a-domain`: name ideas, availability and price. It never buys a domain.
   - `fix-a-domain`: read what public DNS shows, recheck, re-apply, and read certificate and nameserver state.
   - `email-and-redirects`: mail records for Google, Microsoft 365 or Zoho, and permanent redirects.
+  - `get-started`: what CustomDomain™ does and which skill to use.
+  - `integrate-widget`, `setup-webhooks`, `go-live-checklist`, `debug-failed-connection`: for a software company building the widget into its product. They use the REST API and the SDK, not the MCP tools.
+
+The skills are generated from [`skills/`](../../skills) at the repository root. Do not edit the copies in this folder.
 
 ## Sign in
 
@@ -21,7 +25,7 @@ The plugin itself contains no code; everything goes through the MCP server above
 
 ## Safety
 
-Changes that are hard to undo need the person's explicit yes, and the server enforces it: a purchase repeats the domain in `confirm_domain`, a disconnect names the domain in `confirm`, and a nameserver move or rollback sends `confirm: true`. The skills tell Claude to ask first and never to fill those values on its own.
+Changes that are hard to undo need the person's explicit yes, and the server enforces it: a disconnect names the domain in `confirm`, and a nameserver move or rollback sends `confirm: true`. The skills tell Claude to ask first and never to fill those values on its own.
 
 ## Install in Claude Code
 

@@ -1,6 +1,6 @@
 # CustomDomain™ for Codex and ChatGPT
 
-The OpenAI packaging of the CustomDomain™ connector. It adds the hosted server and four skills that teach the
+The OpenAI packaging of the CustomDomain™ connector. It adds the hosted server and skills that teach the
 agent the safe order of calls.
 
 ## What it does
@@ -30,7 +30,7 @@ Then install `customdomain` from the marketplace and sign in when asked.
 |---|---|
 | `.codex-plugin/plugin.json` | The manifest and the listing fields (`interface`) |
 | `.mcp.json` | The remote server; sign in is OAuth with no secrets and no headers |
-| `skills/` | `get-started`, `connect-a-domain`, `fix-a-domain`, `email-and-redirects` |
+| `skills/` | Generated from `skills/` at the repository root (do not edit): `get-started`, `connect-a-domain`, `fix-a-domain`, `email-and-redirects`, `integrate-widget`, `setup-webhooks`, `go-live-checklist`, `debug-failed-connection` |
 | `assets/` | Logo and composer icon |
 
 Support: https://customdomain.ai/contactus · Privacy: https://app.customdomain.ai/privacy · Terms: https://app.customdomain.ai/terms
