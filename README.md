@@ -732,7 +732,6 @@ Report a vulnerability as described under Support, never in a public issue.
 
 ## Related
 
-- [connect-domain-for-ai-agents](https://github.com/CUSTOM-DOMAIN-APP/connect-domain-for-ai-agents): the field guide for agent stacks
 - [customdomain-sdk](https://github.com/CUSTOM-DOMAIN-APP/customdomain-sdk): the official JS/TS client, `customdomain-js` and `@customdomain/react`
 - [awesome-custom-domains](https://github.com/CUSTOM-DOMAIN-APP/awesome-custom-domains): the map of the whole space, including the alternatives
 - [docs](https://github.com/CUSTOM-DOMAIN-APP/docs): source of [docs.customdomain.ai](https://docs.customdomain.ai/docs)
