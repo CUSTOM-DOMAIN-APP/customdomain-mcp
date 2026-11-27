@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- Assistant visual: the connector is one more way into the same engine. Three entry points (embedded widget, API
+     and SDK, AI assistant connector) lead to the one engine (detect the provider, secure sign-in, records set up and
+     kept in sync), which ends in a live domain. Rendered to media/assistant.png by media/render.sh. -->
+<html lang="en"><head><meta charset="utf-8"><title>CustomDomain assistant connector</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .in { position: absolute; left: 80px; width: 500px; height: 175px; padding: 22px 26px; }
+  .in p { margin-top: 8px; font-size: 21px; line-height: 1.35; }
+  .in .chip, .ask { margin-top: 12px; display: inline-block; font-family: "Geist Mono", monospace; font-size: 15px; background: var(--soft); border-radius: 8px; padding: 5px 11px; color: var(--muted); }
+  .ask { font-family: "Inter", sans-serif; font-size: 17px; color: var(--ink); border-radius: 14px; border-bottom-left-radius: 4px; padding: 8px 14px; }
+  .engine { position: absolute; left: 720px; top: 340px; width: 420px; height: 560px; background: var(--ink); color: var(--paper); border-radius: 26px; padding: 32px; box-shadow: 0 30px 80px rgba(28, 25, 23, 0.2); }
+  .engine .label { color: #a8a29e; }
+  .engine h3 { margin-top: 8px; font-family: "Instrument Serif", serif; font-weight: 400; font-size: 40px; line-height: 1.05; }
+  .es { margin-top: 28px; display: flex; gap: 16px; align-items: flex-start; }
+  .es .num { background: var(--paper); color: var(--ink); width: 38px; height: 38px; font-size: 19px; }
+  .es b { display: block; font-size: 22px; font-weight: 600; }
+  .es div span { display: block; margin-top: 4px; font-size: 18px; line-height: 1.35; color: #d6d3d1; }
+  .out { position: absolute; left: 1290px; top: 480px; width: 230px; height: 280px; padding: 26px; }
+  .out h3 { margin-top: 14px; font-family: "Instrument Serif", serif; font-weight: 400; font-size: 28px; line-height: 1.05; }
+  .out .row { font-size: 17px; padding: 10px 0; }
+  svg.l { position: absolute; }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="tree" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#1c1917"/><g fill="#fafaf9" stroke="#fafaf9"><rect x="238" y="250" width="36" height="150" rx="18" stroke="none"/><path d="M256 330 L196 372 M256 330 L316 372" stroke-width="26" stroke-linecap="round" fill="none"/><circle cx="256" cy="176" r="86" stroke="none"/><circle cx="176" cy="220" r="62" stroke="none"/><circle cx="336" cy="220" r="62" stroke="none"/><circle cx="212" cy="140" r="54" stroke="none"/><circle cx="300" cy="140" r="54" stroke="none"/><circle cx="256" cy="244" r="58" stroke="none"/></g></symbol>
+<symbol id="arr" viewBox="0 0 60 24"><path d="M0 12 H54 M46 4 L56 12 L46 20" fill="none" stroke="#a8a29e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol></defs></svg>
+
+<div class="top"><div class="brand"><svg><use href="#tree"/></svg>CustomDomain™</div><div class="tag">The AI assistant connector</div></div>
+<div class="head"><h1>The same engine, inside your AI assistant.</h1>
+<p>The connector gives Claude, ChatGPT and other assistants the same provider detection, secure sign-in and DNS setup, so a person can connect or fix a domain by asking.</p></div>
+
+<div class="card in" style="top:340px"><div class="label">Embedded widget</div><p>Your customers connect their own domain inside your app.</p><span class="chip">customdomain.open()</span></div>
+<div class="card in" style="top:535px"><div class="label">API and SDK</div><p>Your code runs the same flow, from your server or the browser.</p><span class="chip">customdomain-js</span></div>
+<div class="card in" style="top:730px"><div class="label">AI assistant connector</div><p>You ask in plain words, in the assistant you already use.</p><span class="ask">Connect app.example.com to my app.</span></div>
+
+<svg class="l" style="left:596px;top:413px;width:100px;height:24px"><use href="#arr"/></svg>
+<svg class="l" style="left:596px;top:608px;width:100px;height:24px"><use href="#arr"/></svg>
+<svg class="l" style="left:596px;top:803px;width:100px;height:24px"><use href="#arr"/></svg>
+
+<div class="engine">
+  <div class="label">One engine</div>
+  <h3>The same three steps, every time</h3>
+  <div class="es"><span class="num">1</span><div><b>Detect the provider</b><span>One of 100+, found from the domain itself.</span></div></div>
+  <div class="es"><span class="num">2</span><div><b>Secure sign-in</b><span>The person approves it once, with their own provider.</span></div></div>
+  <div class="es"><span class="num">3</span><div><b>Records set up and kept in sync</b><span>Configured automatically, then monitored.</span></div></div>
+</div>
+
+<svg class="l" style="left:1156px;top:608px;width:120px;height:24px"><use href="#arr"/></svg>
+<div class="card out"><span class="live"><i></i>Live</span><h3>app.example.com</h3>
+  <div class="row"><span class="ck"></span>DNS records set</div><div class="row"><span class="ck"></span>Kept in sync</div><div class="row"><span class="ck"></span>HTTPS on</div></div>
+
+<div class="foot">Connector URL: https://mcp.customdomain.ai/mcp</div>
+</body></html>
